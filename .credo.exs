@@ -41,7 +41,12 @@
       # If you create your own checks, you must specify the source files for
       # them here, so they can be loaded by Credo before running the analysis.
       #
-      requires: [],
+      # Checagens próprias do projeto.
+      #
+      # `requires:` e NÃO `elixirc_paths`: verificado que o Credo carrega o código-fonte por
+      # conta própria, o que remove a dependência de ordem entre compilação e análise. Somar as
+      # duas abordagens produz `warning: redefining module` a cada execução. Ver research.md R5.
+      requires: ["./credo_checks/**/*.ex"],
       #
       # If you want to enforce a style guide and need a more traditional linting
       # experience, you can change `strict` to `true` below:
@@ -66,6 +71,14 @@
       #
       checks: %{
         enabled: [
+          #
+          ## Checagens próprias do The Band
+          #
+          # SC-002 — 100% dos acessos a dados passam pela abstração de escopo de Tenant.
+          #
+          # Restrita a `lib/`: testes chamam o repositório direto de propósito, e um teste que
+          # lê o banco para verificar isolamento está fazendo exatamente o certo.
+          {TheBand.Credo.Check.NoDirectRepoAccess, files: %{included: ["lib/"]}},
           #
           ## Consistency Checks
           #
@@ -119,6 +132,16 @@
           # If you don't want TODO comments to cause `mix credo` to fail, just
           # set this value to 0 (zero).
           #
+          #
+          # ATENÇÃO — colisão com o português.
+          #
+          # Esta checagem procura o marcador `TODO` em comentários, e "todo" é palavra comum em
+          # português: "todo acesso", "todo dado", "todo Tenant". Um comentário que comece com
+          # "todo" é sinalizado como marcador esquecido.
+          #
+          # A checagem NÃO foi desligada, porque marcador de verdade esquecido no código é
+          # dívida que ninguém revisita. Se ela sinalizar português legítimo, reformule o
+          # comentário — "cada", "qualquer", "toda" — em vez de desligar a verificação.
           {Credo.Check.Design.TagTODO, [exit_status: 2]},
 
           #
