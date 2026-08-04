@@ -38,12 +38,38 @@ mix phx.server
 
 ### Variável obrigatória ausente falha nomeando a variável (FR-007)
 
+Verificado com `MIX_ENV=prod`, **não** em desenvolvimento:
+
 ```bash
-env -u DATABASE_URL mix phx.server
+MIX_ENV=prod env -u DATABASE_URL mix run -e ''
 ```
 
-**Esperado**: falha imediata com mensagem **nomeando** `DATABASE_URL`. Não deve iniciar com
-valor padrão.
+**Esperado**: falha imediata nomeando `DATABASE_URL`, sem iniciar com valor padrão.
+
+```text
+** (TheBand.Config.MissingEnvError) variável de ambiente DATABASE_URL está ausente.
+   Formato esperado: ecto://USUARIO:SENHA@HOST/BASE
+```
+
+**Por que em produção e não em desenvolvimento.** Uma versão anterior deste roteiro testava em
+desenvolvimento. Exigir a variável ali adicionaria atrito à inicialização local — que é
+exatamente o que SC-001 mede — sem proteger nada: o padrão de desenvolvimento é público por
+construção e não alcança produção. O modo de falha que FR-007 existe para impedir é
+**produção subir com configuração que ninguém escolheu**, e é isso que passou a ser testado.
+
+Em desenvolvimento e teste, `DATABASE_URL` e `SECRET_KEY_BASE` têm padrão declarado em
+`config/dev.exs` e `config/test.exs`.
+
+### Segredo de operação ausente recusa, nunca libera (FR-003)
+
+```bash
+env -u THE_BAND_OPERATOR_SECRET mix phx.server
+# noutro terminal:
+curl -i -H "Authorization: Bearer qualquer-coisa" http://localhost:4000/health/detail
+```
+
+**Esperado**: `401` com corpo `{"error":"unauthorized"}`. O caminho **público** segue
+respondendo `200`.
 
 ---
 

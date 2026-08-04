@@ -24,6 +24,18 @@ alias TheBand.Config, as: Env
 
 config :the_band, TheBandWeb.Endpoint, http: [port: Env.get_env_integer("PORT", 4000)]
 
+# Segredo que libera a verificação de saúde detalhada (FR-003).
+#
+# Lido em todos os ambientes, **sem padrão**. Ausente significa `nil`, e
+# `TheBandWeb.Plugs.OperatorSecret` trata `nil` como recusa. É deliberado que a ausência não
+# tenha padrão nem em desenvolvimento: um padrão aqui seria uma credencial pública que abre o
+# caminho detalhado, e o repositório é público.
+#
+# Para usar localmente: gere com `mix phx.gen.secret 48` e exporte
+# `THE_BAND_OPERATOR_SECRET`. Sem isso, o caminho detalhado recusa — o público continua
+# funcionando.
+config :the_band, :operator_secret, System.get_env("THE_BAND_OPERATOR_SECRET")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :the_band, TheBandWeb.Endpoint,

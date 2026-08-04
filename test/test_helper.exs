@@ -10,6 +10,12 @@
 #
 # como passo próprio (FR-034), e a proposta de mudança é reprovada se falharem. Excluir por
 # padrão é sobre velocidade local, não sobre dispensar a verificação.
+# Dublê da fronteira de verificação de saúde (FR-001, FR-002).
+#
+# Existe para que "componente fora" seja um estado testável, e não algo que só se reproduz
+# derrubando processos no meio da suíte.
+Mox.defmock(TheBand.Health.CheckerMock, for: TheBand.Health.Checker)
+
 ExUnit.start(exclude: [:integration])
 
 Ecto.Adapters.SQL.Sandbox.mode(TheBand.Repo, :manual)
