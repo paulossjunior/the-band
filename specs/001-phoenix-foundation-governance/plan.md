@@ -106,7 +106,6 @@ the-band/
 ├── mix.exs
 ├── mix.lock
 ├── compose.yaml                       # apenas PostgreSQL
-├── Dockerfile
 ├── .env.example                       # sem valor real
 ├── .formatter.exs
 ├── .credo.exs                         # ajuste justificado de Design.AliasUsage (R4)
@@ -213,6 +212,11 @@ proíbe criar pasta vazia antes de a feature justificar.
 
 `tenancy` e `audit` são módulos de infraestrutura, deliberadamente fora de
 `lib/the_band/ontology/`, para que ninguém os confunda com módulo ontológico.
+
+**Sem `Dockerfile` nesta feature**: publicação em ambiente produtivo e entrega por release
+estão explicitamente fora de escopo na especificação, `compose.yaml` sobe apenas o
+PostgreSQL, e a aplicação executa no hospedeiro em desenvolvimento. Nenhum requisito
+funcional exige imagem de contêiner da aplicação. Pertence a feature de entrega futura.
 
 ## Módulos Elixir
 
