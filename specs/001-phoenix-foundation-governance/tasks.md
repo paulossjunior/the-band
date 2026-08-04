@@ -241,6 +241,31 @@ alternativas descartadas usando só o repositório.
 
 ---
 
+## Mapa tarefa → GitHub Issue
+
+Rastreabilidade exigida pela constituição: necessidade → especificação → tarefa → **issue**
+→ branch → código → teste → PR → entrega.
+
+| Issue | Fase | Tarefas | Branch |
+|---|---|---|---|
+| [#2](https://github.com/paulossjunior/the-band/issues/2) Fundação | 1 e 2 | T001–T022 | `feature/2-fundacao-base` |
+| [#3](https://github.com/paulossjunior/the-band/issues/3) US1 🎯 MVP | 3 | T023–T034 | `feature/3-ambiente-e-saude` |
+| [#4](https://github.com/paulossjunior/the-band/issues/4) US2 | 4 | T035–T058 | `feature/4-isolamento-tenant` |
+| [#5](https://github.com/paulossjunior/the-band/issues/5) US3 | 5 | T059–T068 | `feature/5-trabalho-assincrono` |
+| [#6](https://github.com/paulossjunior/the-band/issues/6) US4 | 6 | T069–T082 | `feature/6-verificacao-obrigatoria` |
+| [#7](https://github.com/paulossjunior/the-band/issues/7) US5 | 7 | T083–T088 | `docs/7-adrs` |
+| [#8](https://github.com/paulossjunior/the-band/issues/8) Acabamento | 8 | T089–T095 | `chore/8-acabamento` |
+
+Um Pull Request por issue, conforme o princípio VI da constituição — 95 tarefas em um único
+PR contrariaria "mudanças pequenas, verificáveis e reversíveis". Commits encerram a issue
+com `Closes #N`.
+
+**Bloqueio geral de incorporação**: nenhum PR pode ser incorporado antes do ajuste do
+conjunto de regras e da incorporação do PR #1 (emenda da constituição 2.0.0). Código pode
+ser escrito e enviado nas branches; apenas o merge está travado.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
