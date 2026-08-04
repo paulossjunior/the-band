@@ -20,7 +20,7 @@ defmodule TheBand.Repo do
   Motivo: sem essa fronteira, um acesso que esqueça o escopo de Tenant não é barrado por
   nada. Row Level Security do PostgreSQL foi avaliada e descartada nesta feature porque,
   na ausência do contexto, devolve conjunto vazio silenciosamente em vez de rejeitar — o
-  que transformaria um defeito em "nenhum dado encontrado". Ver ADR-0002 e research.md R2.
+  que transformaria um defeito em "nenhum dado encontrado". Ver ADR-0002 (chega na issue #7) e research.md R2.
   """
 
   use Ecto.Repo,
