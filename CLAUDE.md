@@ -85,9 +85,27 @@ Dependência vai do específico para o geral.
 Conceito que já existe em ontologia mais geral é reutilizado, nunca duplicado.
 `Person` pertence a EO; SRO, CIRO e CDRO só referenciam pessoas em papéis contextuais.
 
+### Termo canônico: Tenant ≠ Organização
+
+| Termo | Significado | Onde |
+|---|---|---|
+| **Tenant** | unidade de isolamento da instalação — quem contrata e opera este The Band. Coluna `tenant_id`. | feature 001 |
+| **Organização** | organização do mundo real analisada — `eo.organization`, objeto social do domínio | feature 005, EO |
+
+Um Tenant contém **várias** Organizações. Consultoria que analisa 12 clientes = 1 Tenant,
+12 `eo.organization`. `eo_organizations` tem `tenant_id`; não é redundância.
+
+**Nunca** use "organização" como sinônimo de Tenant, em código, spec, commit ou revisão.
+Fundir os dois destrói a capacidade de comparar organizações dentro do mesmo contratante —
+a pergunta central do produto.
+
 ### Distinções semânticas que não podem ser violadas
 
-- `Person` ≠ `Team Member` (papel) ≠ `Team Membership` (relação contextual)
+- **Tenant** ≠ `eo.organization` (ver acima)
+- `Person` ≠ `Team Member` (papel) ≠ `Team Membership` (relação contextual). Pessoa é
+  agente físico, existe independente de organização, e **não** tem `organization_id` —
+  participa por vínculo com papel e período. Sem isso, "quais pessoas acumulam papéis?" e
+  cycle time por equipe ficam inrespondíveis.
 - `Intended Process` ≠ `Performed Process`
 - `Code` ≠ `Program`
 - documento de requisitos ≠ requisito

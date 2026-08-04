@@ -33,18 +33,14 @@
 
 ## Notes
 
-Iteração 1, 2 e 3 em 2026-08-03.
+Iterações 1 a 4, todas em 2026-08-03. Iteração 4 após `/speckit-clarify`.
 
-**Nenhuma decisão aberta.** As duas clarificações registradas na seção `Clarifications` do
-`spec.md` estão resolvidas:
+**Nenhuma decisão aberta.** Sete clarificações registradas e resolvidas na seção
+`Clarifications` do `spec.md`: proteção da linha principal, licença, entidade que prova o
+isolamento, desativação de Tenant, exposição da verificação de saúde, termo canônico da
+unidade de isolamento e identidade do Tenant.
 
-- **Q1 — proteção da linha principal: RESOLVIDA.** Decisão: repositório público. Proteção
-  aplicada e confirmada no servidor, sem atores de exceção. FR-027 e FR-028 passam a ter
-  caminho de implementação; SC-007 passa a ser verificável.
-- **Q2 — licença: RESOLVIDA.** Decisão: Apache-2.0. FR-032 fica determinado, incluindo
-  titular de copyright e ano.
-
-**Um item segue reprovado**: `Feature meets measurable outcomes`. Causa única — SC-007
+**Um item segue reprovado**: `Feature meets measurable outcomes`. Causa única — SC-011
 depende de evidência empírica ainda não produzida. Provar que envio direto à linha
 principal é rejeitado exige tentativa real de envio, que é atividade de implementação
 desta feature, não de especificação. A configuração está confirmada por consulta ao
@@ -53,25 +49,37 @@ honestidade de evidência, conforme o princípio V da constituição, e não dev
 antes da execução.
 
 **Risco residual registrado**: repositório público sem arquivo de licença até a
-implementação de FR-032.
+implementação de FR-040.
 
-**Ajustes já aplicados durante a validação:**
+**Ajustes aplicados na iteração 4 (`/speckit-clarify`):**
 
-- Termos de tecnologia (linguagem, framework, banco, biblioteca de filas) removidos do
-  corpo da especificação; permanecem apenas no campo `Input`, que é transcrição literal
-  da descrição fornecida, e no nome da branch.
-- Critérios de sucesso reescritos em termos de resultado observável com número, sem
+- Adicionada seção `Terminologia canônica` no início, normativa: **Tenant** para a unidade
+  de isolamento, **Organização** reservado para `eo.organization` na feature 005. Toda a
+  especificação foi reescrita com o termo canônico. Este era o maior risco de dívida
+  semântica do documento — a palavra "organização" designava dois conceitos distintos.
+- Adicionada entidade **Evento operacional** por Tenant. Sem ela, FR-012 não tinha sujeito
+  (o Tenant não pertence a si mesmo) e SC-003 não tinha objeto de teste — a especificação
+  exigia provar isolamento sem definir nada a isolar.
+- Definido o comportamento de desativação de Tenant: dados preservados e legíveis apenas
+  por rotina administrativa; unidades de trabalho enfileiradas falham permanentemente sem
+  nova tentativa.
+- Verificação de saúde separada em dois níveis: pública informa apenas vivo/não-vivo;
+  detalhada por componente exige credencial de operação. Relevante porque o repositório é
+  público e o endereço fica documentado publicamente.
+- Definida a identidade do Tenant: identificador legível único na instalação, imutável,
+  `^[a-z0-9-]{3,63}$`; nome livre e alterável.
+- Requisitos renumerados de forma contígua: FR-001 a FR-044, SC-001 a SC-016. Seguro nesta
+  fase porque `plan.md`, `tasks.md` e as solicitações ainda não existem — nada externo
+  referencia os identificadores antigos. A partir daqui os identificadores são estáveis.
+
+**Ajustes das iterações 1 a 3:**
+
+- Termos de tecnologia removidos do corpo da especificação; permanecem apenas no campo
+  `Input`, que é transcrição literal da descrição fornecida, e no nome da branch.
+- Critérios de sucesso escritos em termos de resultado observável com número, sem
   referência a componente técnico.
-- Adicionadas notas semânticas em `Key Entities` separando **organização atendida
-  (tenant)** de `eo.organization`, e **unidade de trabalho assíncrono** de
-  `spo.performed_activity`, para impedir fusão indevida de conceitos nas features 005 e
-  006.
-- Registrado em `Assumptions` o desvio de nomenclatura de branch na fase de
-  especificação (número da feature no lugar do número da solicitação, que ainda não
-  existe).
+- Notas semânticas em `Key Entities` separando Tenant de `eo.organization`, e unidade de
+  trabalho assíncrono de `spo.performed_activity`.
+- Registrado em `Assumptions` o desvio de nomenclatura de branch na fase de especificação.
 
-**Bloqueio de avanço**: nenhum. Especificação liberada para `/speckit-clarify` e
-`/speckit-plan`.
-
-Itens marcados incompletos exigem atualização da especificação antes de `/speckit-clarify`
-ou `/speckit-plan`.
+**Bloqueio de avanço**: nenhum. Especificação liberada para `/speckit-plan`.
