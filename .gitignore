@@ -1,0 +1,47 @@
+# Elixir / Mix
+/_build/
+/cover/
+/deps/
+/doc/
+/.fetch
+erl_crash.dump
+*.ez
+*.beam
+/config/*.secret.exs
+.elixir_ls/
+.lexical/
+
+# Phoenix releases and assets
+/the_band-*.tar
+/priv/static/assets/
+/priv/static/cache_manifest.json
+/rel/artifacts/
+/assets/node_modules/
+
+# Ambiente e segredos — NUNCA versionar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets.yaml
+secrets.yml
+
+# Agent local state (pode conter credencial)
+.claude/settings.local.json
+.claude/*.local.json
+.claude/.credentials.json
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+*.swp
+*~
+/.idea/
+/.vscode/*
+!/.vscode/extensions.json
+
+# Temporários
+/tmp/
+npm-debug.log
