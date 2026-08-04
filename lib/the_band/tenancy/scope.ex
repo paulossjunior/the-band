@@ -14,12 +14,42 @@ defmodule TheBand.Tenancy.Scope do
   visível — pior que a ausência de proteção, porque parece funcionamento normal. FR-014 exige
   rejeitar. Ver ADR-0002 (chega na issue #7) e `research.md` R2.
 
-  ## Não é construtível de fora
+  ## O que é garantido, e o que NÃO é
 
-  Só `TheBand.Tenancy.scope/1` e `scope!/1` produzem esta estrutura, e ambas consultam
-  existência e ativação antes. Não há como fabricar um escopo que aponte para Tenant
-  inexistente ou inativo, o que significa que qualquer função que receba `Scope.t()` já tem
-  essa garantia sem precisar reverificar.
+  Uma versão anterior deste módulo afirmava que o escopo "não é construtível de fora" e que
+  "não há como fabricar um escopo que aponte para Tenant inexistente ou inativo". **As duas
+  afirmações eram falsas**, e foram apontadas em revisão independente.
+
+  `@opaque` é verificado por análise de tipos, não em execução. Qualquer módulo pode escrever
+  `%TheBand.Tenancy.Scope{tenant_id: "outro-tenant"}` e a estrutura funciona. Verificado:
+
+      falso = %Scope{tenant_id: id_do_outro_tenant}
+      Audit.list_events(falso)   # devolve os eventos do outro Tenant
+
+  Pior: um escopo fabricado apontando para Tenant **desativado** lê os dados normalmente,
+  contornando FR-017, e apontando para Tenant **inexistente** devolve conjunto vazio — o mesmo
+  modo de falha silenciosa pelo qual Row Level Security foi descartada.
+
+  ### O que É garantido
+
+  Um escopo obtido por `TheBand.Tenancy.scope/1` ou `scope!/1` teve existência e ativação
+  verificadas. Toda função que recebe um escopo **desses** herda a garantia.
+
+  ### O que NÃO é garantido, e por quê
+
+  Que todo `%Scope{}` em circulação veio dali. A construção manual é bloqueada por
+  `TheBand.Credo.Check.NoDirectRepoAccess`, que reprova a proposta de mudança ao encontrar
+  `%TheBand.Tenancy.Scope{` fora de `TheBand.Tenancy`.
+
+  Isso previne **descuido**, não contorno deliberado. Quem escreve código nesta aplicação e
+  quer contornar a validação também poderia chamar o repositório direto. A fronteira é para
+  quem erra, não para quem decide burlar — e não existe, em Elixir, construção de estrutura que
+  resista a quem edita o código.
+
+  Importante para o modelo de ameaça: **não há caminho de entrada externa que produza um
+  escopo.** A camada web chama `TheBand.Tenancy.scope/1` com o identificador recebido. Um
+  contratante não escreve código da aplicação, então isto não é vetor de vazamento entre
+  contratantes — é uma fronteira interna de disciplina.
   """
 
   @enforce_keys [:tenant_id]

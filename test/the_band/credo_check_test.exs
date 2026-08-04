@@ -80,6 +80,35 @@ defmodule TheBand.CredoCheckTest do
     end
   end
 
+  describe "construção manual de escopo é reprovada" do
+    test "a checagem cobre %TheBand.Tenancy.Scope{}" do
+      fonte = File.read!(@check_file)
+
+      assert fonte =~ "@scope_struct",
+             """
+             A regra que reprova construção manual de escopo desapareceu.
+
+             `@opaque` é verificado por análise de tipos, não em execução: sem esta regra,
+             qualquer módulo fabrica `%Scope{tenant_id: outro}` e lê dado de Tenant desativado,
+             contornando FR-017. Apontado em revisão independente.
+             """
+
+      assert fonte =~ ~s("TheBand.Tenancy"),
+             "TheBand.Tenancy precisa ser o único autorizado a construir escopo"
+    end
+
+    test "a limitação da regra está registrada" do
+      fonte = File.read!("lib/the_band/tenancy/scope.ex")
+
+      assert fonte =~ "O que é garantido, e o que NÃO é", """
+      A seção que distingue o que o escopo garante do que não garante foi removida.
+
+      Uma versão anterior afirmava que o escopo "não é construtível de fora" — falso. Afirmação
+      de garantia inexistente é pior que ausência de documentação.
+      """
+    end
+  end
+
   describe "a lista de módulos autorizados" do
     test "contém exatamente os módulos esperados" do
       fonte = File.read!(@check_file)

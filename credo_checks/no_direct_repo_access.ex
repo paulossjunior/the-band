@@ -20,6 +20,19 @@ defmodule TheBand.Credo.Check.NoDirectRepoAccess do
   Sem RLS, nada no banco barra um acesso que ignore a abstração. Esta checagem é o que ocupa
   esse lugar.
 
+  ## Também reprova construção manual de escopo
+
+  `%TheBand.Tenancy.Scope{...}` fora de `TheBand.Tenancy` é reprovado.
+
+  Motivo, apontado em revisão independente: `@opaque` é verificado por análise de tipos e não em
+  execução, então qualquer módulo pode fabricar um escopo apontando para outro Tenant. Um escopo
+  fabricado lê dados de Tenant desativado, contornando FR-017, e devolve conjunto vazio para
+  Tenant inexistente — o mesmo modo de falha silenciosa pelo qual Row Level Security foi
+  descartada.
+
+  Isto previne descuido, não contorno deliberado. Ver a seção equivalente em
+  `TheBand.Tenancy.Scope`.
+
   ## O que detecta
 
   Chamada cujo módulo termina em `Repo`, em qualquer forma de qualificação:
@@ -91,6 +104,11 @@ defmodule TheBand.Credo.Check.NoDirectRepoAccess do
   # Migrações rodam fora de qualquer contexto de Tenant por natureza.
   @authorized_prefixes ["TheBand.Repo.Migrations."]
 
+  # Único módulo autorizado a construir escopo. É ele que valida existência e ativação antes.
+  @scope_builders ["TheBand.Tenancy"]
+
+  @scope_struct [:TheBand, :Tenancy, :Scope]
+
   # Casa qualquer módulo cujo último segmento seja `Repo`, cobrindo tanto
   # `TheBand.Repo.all(...)` quanto `Repo.all(...)` após `alias TheBand.Repo`.
   #
@@ -103,23 +121,19 @@ defmodule TheBand.Credo.Check.NoDirectRepoAccess do
   def run(%SourceFile{} = source_file, params \\ []) do
     issue_meta = IssueMeta.for(source_file, params)
 
-    if authorized?(source_file) do
-      []
-    else
-      Credo.Code.prewalk(source_file, &traverse(&1, &2, issue_meta))
-    end
+    modulo = module_name(source_file)
+
+    Credo.Code.prewalk(source_file, &traverse(&1, &2, issue_meta, modulo))
   end
 
-  defp authorized?(source_file) do
-    case module_name(source_file) do
-      nil ->
-        false
+  defp repo_authorized?(nil), do: false
 
-      name ->
-        name in @authorized or
-          Enum.any?(@authorized_prefixes, &String.starts_with?(name, &1))
-    end
+  defp repo_authorized?(name) do
+    name in @authorized or Enum.any?(@authorized_prefixes, &String.starts_with?(name, &1))
   end
+
+  defp scope_authorized?(nil), do: false
+  defp scope_authorized?(name), do: name in @scope_builders
 
   defp module_name(source_file) do
     source_file
@@ -137,27 +151,54 @@ defmodule TheBand.Credo.Check.NoDirectRepoAccess do
 
   defp find_module_name(_), do: nil
 
+  # Chamada ao repositório.
   defp traverse(
          {{:., meta, [{:__aliases__, _, parts}, fun]}, _, _args} = ast,
          issues,
-         issue_meta
+         issue_meta,
+         modulo
        ) do
-    if List.last(parts) == @repo_segment do
-      modulo = Enum.map_join(parts, ".", &Atom.to_string/1)
-      {ast, [issue_for(issue_meta, meta[:line], modulo, fun) | issues]}
+    if List.last(parts) == @repo_segment and not repo_authorized?(modulo) do
+      chamado = Enum.map_join(parts, ".", &Atom.to_string/1)
+      {ast, [repo_issue(issue_meta, meta[:line], chamado, fun) | issues]}
     else
       {ast, issues}
     end
   end
 
-  defp traverse(ast, issues, _issue_meta), do: {ast, issues}
+  # Construção manual de escopo: `%TheBand.Tenancy.Scope{...}` ou `%Scope{...}` após alias.
+  defp traverse({:%, meta, [{:__aliases__, _, parts}, _fields]} = ast, issues, issue_meta, modulo) do
+    if scope_struct?(parts) and not scope_authorized?(modulo) do
+      {ast, [scope_issue(issue_meta, meta[:line]) | issues]}
+    else
+      {ast, issues}
+    end
+  end
 
-  defp issue_for(issue_meta, line_no, modulo, fun) do
+  defp traverse(ast, issues, _issue_meta, _modulo), do: {ast, issues}
+
+  # Casa tanto o nome completo quanto a forma abreviada por alias.
+  defp scope_struct?(parts) do
+    parts == @scope_struct or List.last(parts) == :Scope
+  end
+
+  defp repo_issue(issue_meta, line_no, modulo, fun) do
     format_issue(issue_meta,
       message:
         "Chamada direta a #{modulo}.#{fun} fora dos módulos autorizados. " <>
           "Use a API pública com escopo de Tenant validado (SC-002).",
       trigger: "#{modulo}.#{fun}",
+      line_no: line_no
+    )
+  end
+
+  defp scope_issue(issue_meta, line_no) do
+    format_issue(issue_meta,
+      message:
+        "Construção manual de TheBand.Tenancy.Scope. Um escopo fabricado lê dado de Tenant " <>
+          "desativado e devolve vazio para Tenant inexistente, contornando a validação. " <>
+          "Use TheBand.Tenancy.scope/1 ou scope!/1.",
+      trigger: "%Scope{",
       line_no: line_no
     )
   end

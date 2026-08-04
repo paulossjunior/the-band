@@ -139,23 +139,42 @@ defmodule TheBand.Integration.TenantIsolationTest do
             {"record_event", fn -> Audit.record_event(nil, %{type: "x"}) end},
             {"purge_events_before", fn -> Audit.purge_events_before(nil, DateTime.utc_now()) end}
           ] do
-        assert_raise ArgumentError, fn -> fun.() end
+        erro = assert_raise ArgumentError, fun
 
         # A distinção entre levantar e devolver vazio é o requisito FR-014, não estilo.
         # Devolver `[]` ou `0` aqui transformaria perda de contexto em "nenhum dado encontrado".
-        _ = nome
+        assert Exception.message(erro) =~ "sem escopo de Tenant",
+               "#{nome}: levantou ArgumentError, mas não o nosso"
       end
     end
 
     test "identificador cru não serve como escopo", %{tenant_a: tenant_a} do
-      assert_raise ArgumentError, fn -> Audit.list_events(tenant_a.id) end
-      assert_raise ArgumentError, fn -> Audit.count_events(tenant_a.id) end
+      # Asserção pela MENSAGEM, não só pela classe.
+      #
+      # Teste de mutação revelou que estas duas asserções passavam pelo motivo errado: com a
+      # invariante removida, `where: tenant_id == ^nil` faz o **Ecto** levantar `ArgumentError`
+      # — a mesma classe que levantamos. O teste ficava verde sem provar nada sobre a nossa
+      # fronteira. Exigir a mensagem elimina a coincidência.
+      for fun <- [
+            fn -> Audit.list_events(tenant_a.id) end,
+            fn -> Audit.count_events(tenant_a.id) end
+          ] do
+        erro = assert_raise ArgumentError, fun
+
+        assert Exception.message(erro) =~ "sem escopo de Tenant",
+               "levantou ArgumentError, mas não o nosso — pode ter sido o Ecto"
+
+        assert Exception.message(erro) =~ "FR-014"
+      end
     end
 
     test "estrutura parecida com escopo não serve", %{tenant_a: tenant_a} do
       falso = %{tenant_id: tenant_a.id}
 
-      assert_raise ArgumentError, fn -> Audit.list_events(falso) end
+      erro = assert_raise ArgumentError, fn -> Audit.list_events(falso) end
+
+      assert Exception.message(erro) =~ "sem escopo de Tenant"
+      assert Exception.message(erro) =~ "FR-014"
     end
   end
 

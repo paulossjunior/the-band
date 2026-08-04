@@ -8,6 +8,7 @@ defmodule TheBand.AuditTest do
   import TheBand.TenancyFixtures
 
   alias TheBand.Audit
+  alias TheBand.Audit.OperationalEvent
   alias TheBand.Telemetry.Correlation
   alias TheBand.Tenancy.Scope
 
@@ -160,6 +161,42 @@ defmodule TheBand.AuditTest do
     test "devolve not_found para identificador inexistente ou inválido", %{scope: scope} do
       assert {:error, :not_found} = Audit.fetch_event(scope, Ecto.UUID.generate())
       assert {:error, :not_found} = Audit.fetch_event(scope, "nao-e-uuid")
+    end
+  end
+
+  describe "tenant_id nunca vem dos atributos (FR-019)" do
+    test "o changeset não aceita tenant_id, nem quando informado explicitamente" do
+      # Segundo ângulo, no nível do changeset.
+      #
+      # Teste de mutação mostrou que este caminho de vazamento tinha cobertura de UM único
+      # teste, no nível de integração. Caminho de vazamento com teste único abre em silêncio se
+      # alguém enfraquecer aquele teste.
+      do_escopo = Ecto.UUID.generate()
+      injetado = Ecto.UUID.generate()
+
+      cs =
+        OperationalEvent.create_changeset(
+          %{type: "x", correlation_id: "c", occurred_at: DateTime.utc_now(), tenant_id: injetado},
+          do_escopo
+        )
+
+      assert Ecto.Changeset.get_field(cs, :tenant_id) == do_escopo,
+             "tenant_id dos atributos prevaleceu sobre o do escopo — FR-019 violado"
+
+      refute Ecto.Changeset.get_field(cs, :tenant_id) == injetado
+    end
+
+    test "tenant_id não está entre os campos aceitos por cast" do
+      # Guarda contra a causa, não só contra o efeito: se `:tenant_id` entrar na lista de
+      # `cast/3`, o `put_change` seguinte ainda venceria hoje, mas a proteção passaria a depender
+      # da ordem das chamadas em vez da lista de campos.
+      fonte = File.read!("lib/the_band/audit/operational_event.ex")
+
+      [_, linha_cast] = String.split(fonte, "|> cast(attrs, ", parts: 2)
+      [linha_cast, _] = String.split(linha_cast, ")", parts: 2)
+
+      refute linha_cast =~ ":tenant_id",
+             "`:tenant_id` entrou na lista de cast/3: #{linha_cast}"
     end
   end
 

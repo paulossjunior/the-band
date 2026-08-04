@@ -93,7 +93,30 @@ defmodule TheBand.Audit.Queries do
   Exige `tenant_id` explícito: não existe caminho aqui que leia todos os Tenants de uma vez.
   """
   @spec admin_list(Ecto.UUID.t(), keyword()) :: [OperationalEvent.t()]
-  def admin_list(tenant_id, opts \\ []) when is_binary(tenant_id) do
+  def admin_list(tenant_id, opts \\ []) do
+    # Valida antes de consultar. Sem isto, identificador inválido chega ao Ecto e produz
+    # `Ecto.Query.CastError` — erro técnico que não diz o que quem opera fez de errado.
+    # Apontado em revisão independente.
+    #
+    # Levanta em vez de devolver lista vazia: este é caminho administrativo, e devolver vazio
+    # para identificador inválido faria erro de digitação parecer "este Tenant não tem eventos".
+    tenant_id =
+      case tenant_id do
+        id when is_binary(id) ->
+          case Ecto.UUID.cast(id) do
+            {:ok, uuid} ->
+              uuid
+
+            :error ->
+              raise ArgumentError,
+                    "admin_list/2 recebeu identificador de Tenant inválido: #{inspect(id)}"
+          end
+
+        outro ->
+          raise ArgumentError,
+                "admin_list/2 exige identificador de Tenant como texto, e recebeu #{inspect(outro)}"
+      end
+
     from(e in OperationalEvent,
       where: e.tenant_id == ^tenant_id,
       order_by: [desc: e.occurred_at],
