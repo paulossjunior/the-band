@@ -35,16 +35,16 @@ Aplicação Phoenix na raiz do repositório: `lib/the_band/`, `lib/the_band_web/
 **Purpose**: inicializar o projeto e as ferramentas de qualidade, com as versões
 verificadas em [research.md](research.md) R1.
 
-- [ ] T001 Gerar aplicação Phoenix na raiz com `echo Y | mix phx.new . --app the_band --module TheBand --no-mailer --no-gettext --no-dashboard`. O `echo Y` é **obrigatório**: em diretório não vazio o gerador pergunta `[Yn]` e **aborta** sem entrada disponível (R1, verificado). Confirmar depois que `.git`, `.github/`, `.specify/`, `.claude/`, `specs/`, `CLAUDE.md`, `README.md` e `.gitignore` sobreviveram, e decidir o que fazer com o `AGENTS.md` que o gerador 1.8.9 cria
-- [ ] T002 Fixar em `mix.exs` as versões verificadas em R1: `phoenix ~> 1.8.9`, `phoenix_live_view ~> 1.2`, `ecto_sql ~> 3.14`, `postgrex ~> 0.22`, `oban ~> 2.23`, `req ~> 0.7`, `jason ~> 1.4`, `credo ~> 1.7` e `dialyxir ~> 1.4` (ambos `only: [:dev, :test], runtime: false`), `mox ~> 1.2` (`only: :test`). Não usar `postgrex 1.0.0-rc` nem `jason 1.5.0-alpha` — são pre-release (R1)
-- [ ] T003 Declarar `elixir: "~> 1.20"` em `mix.exs` e registrar Elixir 1.20.2 / OTP 29 no `README.md`
-- [ ] T004 [P] Configurar `.formatter.exs` incluindo `priv/repo/migrations` e `.credo.exs` nos padrões de entrada
-- [ ] T005 [P] Criar `.credo.exs` a partir de `mix credo.gen.config`, ajustando **apenas** `Credo.Check.Design.AliasUsage` com justificativa em comentário no próprio arquivo: em modo estrito o código gerado pelo Phoenix 1.8.9 produz 3 achados e `mix credo --strict` sai com código 2 (R4). Nenhuma outra checagem estrita pode ser afrouxada
-- [ ] T006 [P] Criar `.dialyzer_ignore.exs` (pode iniciar vazio) e declarar `dialyzer: [ignore_warnings: ".dialyzer_ignore.exs", plt_add_apps: [:mix, :ex_unit]]` em `mix.exs` — exigido pelo aviso observado em R3
-- [ ] T007 [P] Criar `compose.yaml` com **apenas** o serviço PostgreSQL 17 (`postgres:17-alpine`), volume nomeado e verificação de prontidão. A aplicação executa no hospedeiro em desenvolvimento (Assumptions da spec)
-- [ ] T008 [P] Criar `.env.example` com todas as variáveis obrigatórias (`DATABASE_URL`, `SECRET_KEY_BASE`, `PHX_HOST`, `PORT`, `THE_BAND_OPERATOR_SECRET`) e **nenhum valor real** — FR-006
-- [ ] T009 [P] Criar `LICENSE` com o texto integral de Apache-2.0, titular do copyright e ano — FR-040. Encerra o risco residual de repositório público sem permissão de uso concedida
-- [ ] T010 Rodar os cinco portões localmente como linha de base e registrar a saída, **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A ordem não é estética: **`mix credo` não compila o projeto antes de rodar** (R5), e sem a compilação a checagem customizada de SC-002 não carrega e o Credo sai com código 0. `mix credo --strict` só passa com T005 concluída (R4)
+- [x] T001 Gerar aplicação Phoenix na raiz com `echo Y | mix phx.new . --app the_band --module TheBand --no-mailer --no-gettext --no-dashboard`. O `echo Y` é **obrigatório**: em diretório não vazio o gerador pergunta `[Yn]` e **aborta** sem entrada disponível (R1, verificado). Confirmar depois que `.git`, `.github/`, `.specify/`, `.claude/`, `specs/`, `CLAUDE.md`, `README.md` e `.gitignore` sobreviveram, e decidir o que fazer com o `AGENTS.md` que o gerador 1.8.9 cria
+- [x] T002 Fixar em `mix.exs` as versões verificadas em R1: `phoenix ~> 1.8.9`, `phoenix_live_view ~> 1.2`, `ecto_sql ~> 3.14`, `postgrex ~> 0.22`, `oban ~> 2.23`, `req ~> 0.7`, `jason ~> 1.4`, `credo ~> 1.7` e `dialyxir ~> 1.4` (ambos `only: [:dev, :test], runtime: false`), `mox ~> 1.2` (`only: :test`). Não usar `postgrex 1.0.0-rc` nem `jason 1.5.0-alpha` — são pre-release (R1)
+- [x] T003 Declarar `elixir: "~> 1.20"` em `mix.exs` e registrar Elixir 1.20.2 / OTP 29 no `README.md`
+- [x] T004 [P] Configurar `.formatter.exs` incluindo `priv/repo/migrations` e `.credo.exs` nos padrões de entrada
+- [x] T005 [P] Criar `.credo.exs` a partir de `mix credo.gen.config`, ajustando **apenas** `Credo.Check.Design.AliasUsage` com justificativa em comentário no próprio arquivo: em modo estrito o código gerado pelo Phoenix 1.8.9 produz 3 achados e `mix credo --strict` sai com código 2 (R4). Nenhuma outra checagem estrita pode ser afrouxada
+- [x] T006 [P] Criar `.dialyzer_ignore.exs` (pode iniciar vazio) e declarar `dialyzer: [ignore_warnings: ".dialyzer_ignore.exs", plt_add_apps: [:mix, :ex_unit]]` em `mix.exs` — exigido pelo aviso observado em R3
+- [x] T007 [P] Criar `compose.yaml` com **apenas** o serviço PostgreSQL 17 (`postgres:17-alpine`), volume nomeado e verificação de prontidão. A aplicação executa no hospedeiro em desenvolvimento (Assumptions da spec)
+- [x] T008 [P] Criar `.env.example` com todas as variáveis obrigatórias (`DATABASE_URL`, `SECRET_KEY_BASE`, `PHX_HOST`, `PORT`, `THE_BAND_OPERATOR_SECRET`) e **nenhum valor real** — FR-006
+- [x] T009 [P] Criar `LICENSE` com o texto integral de Apache-2.0, titular do copyright e ano — FR-040. Encerra o risco residual de repositório público sem permissão de uso concedida
+- [x] T010 Rodar os cinco portões localmente como linha de base e registrar a saída, **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A ordem não é estética: **`mix credo` não compila o projeto antes de rodar** (R5), e sem a compilação a checagem customizada de SC-002 não carrega e o Credo sai com código 0. `mix credo --strict` só passa com T005 concluída (R4)
 
 **Checkpoint**: projeto compila, os cinco portões passam localmente, licença declarada.
 
@@ -56,17 +56,17 @@ verificadas em [research.md](research.md) R1.
 
 **⚠️ CRÍTICO**: nenhuma user story começa antes desta fase terminar.
 
-- [ ] T011 Configurar `TheBand.Repo` em `lib/the_band/repo.ex` com `binary_id` como tipo de chave primária padrão e `utc_datetime_usec` como tipo de timestamp padrão
-- [ ] T012 Implementar validação de variáveis obrigatórias em `config/runtime.exs`, falhando a inicialização com mensagem que **nomeia** a variável ausente — FR-007. Nenhum valor padrão inseguro
-- [ ] T013 [P] Teste em `test/the_band/runtime_config_test.exs` verificando que a ausência de cada variável obrigatória produz erro nomeando-a — FR-007
-- [ ] T014 Configurar Oban em `config/config.exs` e `config/test.exs` com uma fila `default`, e adicionar `Oban` à árvore de supervisão em `lib/the_band/application.ex`. Em teste usar `testing: :manual`
-- [ ] T015 Criar migração `priv/repo/migrations/*_add_oban_jobs.exs` com `Oban.Migration.up(version: 14)` e `Oban.Migration.down(version: 1)`. **v14, não v12**: a pesquisa original testou com `plugins: false`, configuração em que `verify_migrated!/1` aceita v12; com `Oban.Plugins.Pruner` o arranque exige v14 — ver a correção de R1 em [research.md](research.md)
-- [ ] T016 [P] Implementar `TheBand.Telemetry.Correlation` em `lib/the_band/telemetry/correlation.ex`: geração e propagação do identificador de correlação — FR-029
-- [ ] T017 [P] Implementar plug `TheBandWeb.Plugs.CorrelationId` em `lib/the_band_web/plugs/correlation_id.ex`, propagando o cabeçalho `X-Correlation-Id` recebido ou gerando um, e devolvendo-o na resposta — FR-029
-- [ ] T018 Implementar `TheBand.Telemetry.Handler` em `lib/the_band/telemetry/handler.ex` emitindo registro estruturado com Tenant, correlação, identificador do trabalho, tentativa, duração, situação e código de erro — FR-028
-- [ ] T019 Implementar lista negra de chaves sensíveis usada pelo registro operacional (`token`, `secret`, `password`, `key`, `credential`, `authorization`) em `lib/the_band/telemetry/handler.ex` — FR-030
-- [ ] T020 [P] Teste em `test/the_band/telemetry/handler_test.exs` verificando que valor sob chave sensível é omitido ou mascarado — FR-030
-- [ ] T021 [P] Ajustar `test/support/data_case.ex` e `test/support/conn_case.ex` para `Ecto.Adapters.SQL.Sandbox`, e registrar a etiqueta `:integration` como excluída por padrão em `test/test_helper.exs`
+- [x] T011 Configurar `TheBand.Repo` em `lib/the_band/repo.ex` com `binary_id` como tipo de chave primária padrão e `utc_datetime_usec` como tipo de timestamp padrão
+- [x] T012 Implementar validação de variáveis obrigatórias em `config/runtime.exs`, falhando a inicialização com mensagem que **nomeia** a variável ausente — FR-007. Nenhum valor padrão inseguro
+- [x] T013 [P] Teste em `test/the_band/runtime_config_test.exs` verificando que a ausência de cada variável obrigatória produz erro nomeando-a — FR-007
+- [x] T014 Configurar Oban em `config/config.exs` e `config/test.exs` com uma fila `default`, e adicionar `Oban` à árvore de supervisão em `lib/the_band/application.ex`. Em teste usar `testing: :manual`
+- [x] T015 Criar migração `priv/repo/migrations/*_add_oban_jobs.exs` com `Oban.Migration.up(version: 14)` e `Oban.Migration.down(version: 1)`. **v14, não v12**: a pesquisa original testou com `plugins: false`, configuração em que `verify_migrated!/1` aceita v12; com `Oban.Plugins.Pruner` o arranque exige v14 — ver a correção de R1 em [research.md](research.md)
+- [x] T016 [P] Implementar `TheBand.Telemetry.Correlation` em `lib/the_band/telemetry/correlation.ex`: geração e propagação do identificador de correlação — FR-029
+- [x] T017 [P] Implementar plug `TheBandWeb.Plugs.CorrelationId` em `lib/the_band_web/plugs/correlation_id.ex`, propagando o cabeçalho `X-Correlation-Id` recebido ou gerando um, e devolvendo-o na resposta — FR-029
+- [x] T018 Implementar `TheBand.Telemetry.Handler` em `lib/the_band/telemetry/handler.ex` emitindo registro estruturado com Tenant, correlação, identificador do trabalho, tentativa, duração, situação e código de erro — FR-028
+- [x] T019 Implementar lista negra de chaves sensíveis usada pelo registro operacional (`token`, `secret`, `password`, `key`, `credential`, `authorization`) em `lib/the_band/telemetry/handler.ex` — FR-030
+- [x] T020 [P] Teste em `test/the_band/telemetry/handler_test.exs` verificando que valor sob chave sensível é omitido ou mascarado — FR-030
+- [x] T021 [P] Ajustar `test/support/data_case.ex` e `test/support/conn_case.ex` para `Ecto.Adapters.SQL.Sandbox`, e registrar a etiqueta `:integration` como excluída por padrão em `test/test_helper.exs`
 - [ ] T022 [P] Criar `test/support/tenancy_fixtures.ex` com auxiliares para criar Tenant ativo, Tenant inativo e evento operacional. **Executada na issue #4, não na #2**: os auxiliares referenciam `TheBand.Tenancy.Tenant` e `TheBand.Audit.OperationalEvent`, cujos schemas são T045 e T049. O arquivo não compila antes deles. Defeito de ordenação identificado durante a implementação da issue #2 e corrigido aqui em vez de contornado
 
 **Checkpoint**: aplicação sobe, Oban ativo, correlação propagando, base de teste pronta.
@@ -86,21 +86,21 @@ resposta na verificação de saúde pública em até 15 minutos (SC-001).
 
 > Escrever primeiro. Devem falhar antes da implementação.
 
-- [ ] T023 [P] [US1] Teste de contrato em `test/contract/health_contract_test.exs` afirmando que `GET /health` devolve `200` com corpo **exatamente** `{"status":"alive"}` e nenhuma outra chave — SC-009, conforme [contracts/health.md](contracts/health.md)
-- [ ] T024 [P] [US1] Teste em `test/the_band_web/controllers/health_controller_test.exs` verificando que `GET /health` devolve `200` mesmo com o armazenamento indisponível, porque não consulta dependência — FR-001
-- [ ] T025 [P] [US1] Teste em `test/the_band_web/plugs/operator_secret_test.exs` cobrindo os três casos de recusa: sem cabeçalho, com segredo errado, e com segredo ausente da configuração — todos `401` com corpo idêntico — FR-003, SC-009
-- [ ] T026 [P] [US1] Teste em `test/contract/health_contract_test.exs` verificando que `GET /health/detail` com segredo válido devolve `200` com `components` contendo `database` e `background_jobs`, e `503` com `database: "down"` quando o armazenamento está indisponível — FR-002, FR-004
-- [ ] T027 [P] [US1] Teste de integração em `test/integration/migration_reversibility_test.exs` aplicando e revertendo as migrações em base vazia e em base já inicializada — FR-008, SC-015
+- [x] T023 [P] [US1] Teste de contrato em `test/contract/health_contract_test.exs` afirmando que `GET /health` devolve `200` com corpo **exatamente** `{"status":"alive"}` e nenhuma outra chave — SC-009, conforme [contracts/health.md](contracts/health.md)
+- [x] T024 [P] [US1] Teste em `test/the_band_web/controllers/health_controller_test.exs` verificando que `GET /health` devolve `200` mesmo com o armazenamento indisponível, porque não consulta dependência — FR-001
+- [x] T025 [P] [US1] Teste em `test/the_band_web/plugs/operator_secret_test.exs` cobrindo os três casos de recusa: sem cabeçalho, com segredo errado, e com segredo ausente da configuração — todos `401` com corpo idêntico — FR-003, SC-009
+- [x] T026 [P] [US1] Teste em `test/contract/health_contract_test.exs` verificando que `GET /health/detail` com segredo válido devolve `200` com `components` contendo `database` e `background_jobs`, e `503` com `database: "down"` quando o armazenamento está indisponível — FR-002, FR-004
+- [x] T027 [P] [US1] Teste de integração em `test/integration/migration_reversibility_test.exs` aplicando e revertendo as migrações em base vazia e em base já inicializada — FR-008, SC-015
 
 ### Implementation for User Story 1
 
-- [ ] T028 [US1] Implementar `TheBand.Health` em `lib/the_band/health.ex` com `alive?/0` que não consulta dependência e `detailed/0` que verifica armazenamento e mecanismo de trabalho assíncrono — FR-001, FR-002
-- [ ] T029 [US1] Implementar `TheBandWeb.Plugs.OperatorSecret` em `lib/the_band_web/plugs/operator_secret.ex` usando `Plug.Crypto.secure_compare/2`, recusando quando o segredo não está configurado — FR-003, R9
-- [ ] T030 [P] [US1] Implementar `TheBandWeb.HealthController` em `lib/the_band_web/controllers/health_controller.ex` para o caminho público — FR-001
-- [ ] T031 [P] [US1] Implementar `TheBandWeb.HealthDetailController` em `lib/the_band_web/controllers/health_detail_controller.ex` para o caminho restrito, sem expor credencial, host interno, versão nem rastro de pilha — FR-002, FR-004
-- [ ] T032 [US1] Declarar em `lib/the_band_web/router.ex` dois caminhos **distintos**: `/health` público e `/health/detail` atrás do plug de segredo. Caminhos separados, não corpo variável por autorização (R9)
-- [ ] T033 [US1] Escrever a seção de inicialização do `README.md` com os comandos exatos do bloco 1 de [quickstart.md](quickstart.md), sem nenhum passo manual não documentado — FR-005, SC-001
-- [ ] T034 [US1] Executar o bloco 1 e o bloco 2 de [quickstart.md](quickstart.md) em ambiente limpo, cronometrar, e registrar a evidência — FR-005, SC-001, SC-009
+- [x] T028 [US1] Implementar `TheBand.Health` em `lib/the_band/health.ex` com `alive?/0` que não consulta dependência e `detailed/0` que verifica armazenamento e mecanismo de trabalho assíncrono — FR-001, FR-002
+- [x] T029 [US1] Implementar `TheBandWeb.Plugs.OperatorSecret` em `lib/the_band_web/plugs/operator_secret.ex` usando `Plug.Crypto.secure_compare/2`, recusando quando o segredo não está configurado — FR-003, R9
+- [x] T030 [P] [US1] Implementar `TheBandWeb.HealthController` em `lib/the_band_web/controllers/health_controller.ex` para o caminho público — FR-001
+- [x] T031 [P] [US1] Implementar `TheBandWeb.HealthDetailController` em `lib/the_band_web/controllers/health_detail_controller.ex` para o caminho restrito, sem expor credencial, host interno, versão nem rastro de pilha — FR-002, FR-004
+- [x] T032 [US1] Declarar em `lib/the_band_web/router.ex` dois caminhos **distintos**: `/health` público e `/health/detail` atrás do plug de segredo. Caminhos separados, não corpo variável por autorização (R9)
+- [x] T033 [US1] Escrever a seção de inicialização do `README.md` com os comandos exatos do bloco 1 de [quickstart.md](quickstart.md), sem nenhum passo manual não documentado — FR-005, SC-001
+- [x] T034 [US1] Executar o bloco 1 e o bloco 2 de [quickstart.md](quickstart.md) em ambiente limpo, cronometrar, e registrar a evidência — FR-005, SC-001, SC-009
 
 **Checkpoint**: US1 entrega valor isolado — ambiente reproduzível com saúde verificável.
 
@@ -190,20 +190,20 @@ observar a reprovação; corrigir e observar a aprovação (SC-010).
 
 ### Implementation for User Story 4
 
-- [ ] T069 [US4] Criar `.github/workflows/ci.yml` com `erlef/setup-beam` fixando Elixir 1.20.2 e OTP 29, PostgreSQL 17 como serviço do fluxo de trabalho, e os cinco portões **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A compilação precisa vir antes do Credo, senão a checagem de SC-002 não carrega (R5, e ver T056) — FR-031, FR-032, FR-034, R10
-- [ ] T070 [US4] Configurar no `ci.yml` cache de `deps` e `_build` e cache **separado** do PLT do Dialyzer, cobrindo `priv/plts/dialyzer-*.plt` — existem **dois** PLTs, um por ambiente (`dev` e `test`), porque nome fixo faz os dois se sobrescreverem e forçar reconstrução completa a cada troca. Chave incluindo versão de OTP, versão de Elixir e hash de `mix.lock`. Medido: 1m23s sem cache, 4s com cache. Sem isso o orçamento de 10 minutos de SC-012 fica comprometido
-- [ ] T071 [US4] Incluir no `ci.yml` a execução de `mix ecto.migrate` e `mix test --only integration` contra o serviço PostgreSQL — FR-034
-- [ ] T072 [US4] Garantir que `mix deps.compile` **não** use `--warnings-as-errors`: `oban 2.23.1` emite alerta próprio em Elixir 1.20 (`lib/oban/repo.ex:253`), que é da dependência e não do projeto (R1)
-- [ ] T073 [US4] Criar `.github/workflows/security.yml` com verificação de credencial versionada e de dependência com vulnerabilidade conhecida (`mix deps.audit` ou equivalente), reprovando a proposta em caso de achado — FR-033
-- [ ] T074 [P] [US4] Criar `.github/PULL_REQUEST_TEMPLATE.md` exigindo escopo, fora de escopo, testes, resultado dos portões e evidências — FR-037
-- [ ] T075 [P] [US4] Criar `.github/ISSUE_TEMPLATE/feature-request.yml`, `bug-report.yml`, `technical-task.yml` e `research-task.yml` — FR-038
-- [ ] T076 [P] [US4] Criar `.github/CODEOWNERS` declarando responsáveis por revisão das áreas do código — FR-039
-- [ ] T077 [US4] **Evidência de SC-011**: executar o bloco 7 de [quickstart.md](quickstart.md) — tentativa real de envio direto à linha principal — e anexar a saída de erro ao PR — FR-036. A configuração de `protect-main` já está confirmada no servidor, mas o comportamento ainda **não** foi observado; o princípio V da constituição proíbe declarar sucesso sem evidência
-- [ ] T078 [US4] Registrar no conjunto de regras `protect-main` **todas** as verificações de `ci.yml` e `security.yml` como verificações obrigatórias de status (`required_status_checks`), de modo que a incorporação seja impossível com qualquer uma reprovada, ausente ou pendente — FR-035. **Encerra o risco residual** da cláusula `Mantenedor único` da constituição: até esta tarefa, a proteção se reduz a exigir Pull Request
-- [ ] T079 [US4] **Evidência de SC-011a**: com uma verificação obrigatória deliberadamente reprovada, e depois com uma pendente, tentar incorporar de fato e confirmar que o servidor bloqueia nos dois casos. Anexar a evidência ao PR — este é o substituto mecânico da aprovação humana; sem ele a cláusula `Mantenedor único` fica sem lastro
-- [ ] T080 [US4] Verificar que `bypass_actors` do conjunto de regras permanece **vazio** após T078, inclusive para quem administra o repositório, e registrar no `README.md` a condição de reversão automática: ao entrar a segunda pessoa com permissão de escrita, restaurar `required_approving_review_count: 1` sem nova emenda — FR-036, FR-036a, SC-011. Ver bloco 7.3 e 7.4 de [quickstart.md](quickstart.md)
-- [ ] T081 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
-- [ ] T082 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
+- [x] T069 [US4] Criar `.github/workflows/ci.yml` com `erlef/setup-beam` fixando Elixir 1.20.2 e OTP 29, PostgreSQL 17 como serviço do fluxo de trabalho, e os cinco portões **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A compilação precisa vir antes do Credo, senão a checagem de SC-002 não carrega (R5, e ver T056) — FR-031, FR-032, FR-034, R10
+- [x] T070 [US4] Configurar no `ci.yml` cache de `deps` e `_build` e cache **separado** do PLT do Dialyzer, cobrindo `priv/plts/dialyzer-*.plt` — existem **dois** PLTs, um por ambiente (`dev` e `test`), porque nome fixo faz os dois se sobrescreverem e forçar reconstrução completa a cada troca. Chave incluindo versão de OTP, versão de Elixir e hash de `mix.lock`. Medido: 1m23s sem cache, 4s com cache. Sem isso o orçamento de 10 minutos de SC-012 fica comprometido
+- [x] T071 [US4] Incluir no `ci.yml` a execução de `mix ecto.migrate` e `mix test --only integration` contra o serviço PostgreSQL — FR-034
+- [x] T072 [US4] Garantir que `mix deps.compile` **não** use `--warnings-as-errors`: `oban 2.23.1` emite alerta próprio em Elixir 1.20 (`lib/oban/repo.ex:253`), que é da dependência e não do projeto (R1)
+- [x] T073 [US4] Criar `.github/workflows/security.yml` com verificação de credencial versionada e de dependência com vulnerabilidade conhecida (`mix deps.audit` ou equivalente), reprovando a proposta em caso de achado — FR-033
+- [x] T074 [P] [US4] Criar `.github/PULL_REQUEST_TEMPLATE.md` exigindo escopo, fora de escopo, testes, resultado dos portões e evidências — FR-037
+- [x] T075 [P] [US4] Criar `.github/ISSUE_TEMPLATE/feature-request.yml`, `bug-report.yml`, `technical-task.yml` e `research-task.yml` — FR-038
+- [x] T076 [P] [US4] Criar `.github/CODEOWNERS` declarando responsáveis por revisão das áreas do código — FR-039
+- [x] T077 [US4] **Evidência de SC-011**: executar o bloco 7 de [quickstart.md](quickstart.md) — tentativa real de envio direto à linha principal — e anexar a saída de erro ao PR — FR-036. A configuração de `protect-main` já está confirmada no servidor, mas o comportamento ainda **não** foi observado; o princípio V da constituição proíbe declarar sucesso sem evidência
+- [x] T078 [US4] Registrar no conjunto de regras `protect-main` **todas** as verificações de `ci.yml` e `security.yml` como verificações obrigatórias de status (`required_status_checks`), de modo que a incorporação seja impossível com qualquer uma reprovada, ausente ou pendente — FR-035. **Encerra o risco residual** da cláusula `Mantenedor único` da constituição: até esta tarefa, a proteção se reduz a exigir Pull Request
+- [x] T079 [US4] **Evidência de SC-011a**: com uma verificação obrigatória deliberadamente reprovada, e depois com uma pendente, tentar incorporar de fato e confirmar que o servidor bloqueia nos dois casos. Anexar a evidência ao PR — este é o substituto mecânico da aprovação humana; sem ele a cláusula `Mantenedor único` fica sem lastro
+- [x] T080 [US4] Verificar que `bypass_actors` do conjunto de regras permanece **vazio** após T078, inclusive para quem administra o repositório, e registrar no `README.md` a condição de reversão automática: ao entrar a segunda pessoa com permissão de escrita, restaurar `required_approving_review_count: 1` sem nova emenda — FR-036, FR-036a, SC-011. Ver bloco 7.3 e 7.4 de [quickstart.md](quickstart.md)
+- [x] T081 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
+- [x] T082 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
 
 **Checkpoint**: os princípios do projeto passam a ser obrigação executada pelo servidor.
 

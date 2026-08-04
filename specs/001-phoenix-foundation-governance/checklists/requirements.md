@@ -28,7 +28,7 @@
 
 - [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
-- [ ] Feature meets measurable outcomes defined in Success Criteria
+- [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
 ## Notes
@@ -40,13 +40,29 @@ Iterações 1 a 4, todas em 2026-08-03. Iteração 4 após `/speckit-clarify`.
 isolamento, desativação de Tenant, exposição da verificação de saúde, termo canônico da
 unidade de isolamento e identidade do Tenant.
 
-**Um item segue reprovado**: `Feature meets measurable outcomes`. Causa única — SC-011
-depende de evidência empírica ainda não produzida. Provar que envio direto à linha
-principal é rejeitado exige tentativa real de envio, que é atividade de implementação
-desta feature, não de especificação. A configuração está confirmada por consulta ao
-servidor; o comportamento ainda não foi observado. Este item permanece reprovado por
-honestidade de evidência, conforme o princípio V da constituição, e não deve ser marcado
-antes da execução.
+**16/16 aprovados.** O último item pendente foi fechado em 2026-08-04, na issue #6, com a
+evidência que faltava.
+
+`Feature meets measurable outcomes` esteve reprovado desde a fase de especificação porque
+SC-011 exigia provar por **execução** que envio direto à linha principal é rejeitado, e não
+por leitura de configuração. A prova foi produzida:
+
+```text
+$ git commit --allow-empty -m "probe: verificar protecao da linha principal (SC-011)"
+$ git push origin main
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: - Changes must be made through a pull request.
+remote: - 3 of 3 required status checks are expected.
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+```
+
+Rejeitado para quem **administra** o repositório, com `bypass_actors: []` e
+`current_user_can_bypass: never`.
+
+SC-011a, o substituto mecânico da aprovação humana, também foi provado por tentativa real de
+incorporação: com verificação obrigatória **pendente** e depois **reprovada**, o servidor
+recusou nos dois casos (`mergeStateStatus: BLOCKED`), mesmo com as outras duas verificações
+aprovadas — exige-se que todas passem, não a maioria.
 
 **Risco residual registrado**: repositório público sem arquivo de licença até a
 implementação de FR-040.
