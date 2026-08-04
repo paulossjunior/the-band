@@ -1,0 +1,68 @@
+name: Relato de defeito
+description: Comportamento observado que difere do especificado
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Defeito é divergência entre o **especificado** e o **observado**. Se o comportamento
+        incomoda mas não contraria requisito algum, é pedido de funcionalidade.
+
+        Lembrete semântico: defeito (`Defect`) não é falha (`Failure`). Falha é o evento
+        observado; o defeito é a causa no artefato.
+
+  - type: textarea
+    id: observado
+    attributes:
+      label: O que aconteceu
+      description: Saída real, colada. Não a interpretação dela.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que deveria acontecer, e por quê
+      description: |
+        Cite o requisito, o critério de sucesso ou o contrato violado — ex.: `FR-014`,
+        `SC-003`, `contracts/health.md`. Sem isso não há como saber se é defeito.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Como reproduzir
+      description: Passos exatos, comandos incluídos.
+      placeholder: |
+        1. docker compose up -d
+        2. mix ecto.setup
+        3. curl -i http://localhost:4000/health
+    validations:
+      required: true
+
+  - type: input
+    id: correlacao
+    attributes:
+      label: Identificador de correlação
+      description: |
+        Do cabeçalho `x-correlation-id` da resposta, ou do registro operacional. É o que
+        permite reconstituir a cadeia de execução.
+    validations:
+      required: false
+
+  - type: textarea
+    id: ambiente
+    attributes:
+      label: Ambiente
+      placeholder: "Elixir 1.20.2, OTP 29.0.4, PostgreSQL 17.10, macOS arm64"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: seguranca
+    attributes:
+      label: Segurança
+      options:
+        - label: Confirmo que não colei credencial, token nem dado pessoal sensível neste relato. O repositório é público.
+          required: true

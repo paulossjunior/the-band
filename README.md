@@ -42,10 +42,96 @@ Arquitetura: monólito modular multitenant, organizado pelas ontologias.
 
 ## Desenvolvimento
 
-Requisitos locais: Elixir 1.20+, Erlang/OTP 29, Docker (PostgreSQL via Compose).
+### Pré-requisitos
 
-Instruções de execução serão adicionadas pela feature 001.
+| Item | Versão verificada | Conferir com |
+|---|---|---|
+| Elixir | 1.20.2 | `elixir --version` |
+| Erlang/OTP | 29 | `elixir --version` |
+| Docker | daemon ativo | `docker info` |
+
+Se `mix` reclamar de Hex ou rebar:
+
+```bash
+mix local.hex --force && mix local.rebar --force
+```
+
+### Subir a plataforma
+
+```bash
+git clone https://github.com/paulossjunior/the-band.git
+cd the-band
+cp .env.example .env        # preencher os valores locais
+docker compose up -d        # sobe apenas o PostgreSQL
+mix deps.get
+mix ecto.setup              # cria a base, migra e semeia
+mix phx.server
+```
+
+Confirmar que está viva:
+
+```bash
+curl -s http://localhost:4000/health
+# {"status":"alive"}
+```
+
+Pronto. Nenhum passo manual além destes.
+
+### Verificação de saúde
+
+Dois caminhos distintos, de propósito.
+
+| Caminho | Credencial | O que responde |
+|---|---|---|
+| `GET /health` | não | apenas se a plataforma está viva. **Não consulta dependência alguma** e não nomeia componente |
+| `GET /health/detail` | sim | estado de cada componente: armazenamento e trabalho assíncrono |
+
+O caminho público não detalha nada porque este repositório é público e a URL fica
+documentada: resposta detalhada aberta entregaria reconhecimento de infraestrutura a
+qualquer pessoa.
+
+Para usar o caminho detalhado, gere e exporte o segredo de operação:
+
+```bash
+export THE_BAND_OPERATOR_SECRET=$(mix phx.gen.secret 48)
+
+curl -s -H "Authorization: Bearer $THE_BAND_OPERATOR_SECRET" \
+  http://localhost:4000/health/detail
+# {"status":"healthy","components":{"background_jobs":"up","database":"up"}}
+```
+
+Sem o segredo configurado, o caminho detalhado **recusa** todo acesso — nunca libera. O
+público continua respondendo.
+
+### Portões de qualidade
+
+```bash
+mix gates
+```
+
+Roda, nesta ordem: formatação, compilação sem alerta, análise estática estrita, análise de
+tipos e testes. **A ordem importa** — `mix credo` não compila o projeto antes de rodar, e sem
+a compilação as checagens próprias do projeto não carregam.
+
+Testes de integração ficam fora da execução padrão por velocidade, e são obrigatórios no
+fluxo de verificação automática:
+
+```bash
+mix test --only integration
+```
+
+A primeira execução de `mix dialyzer` constrói o PLT e leva cerca de 1m20s. As seguintes
+levam segundos.
+
+### Fluxo de contribuição
+
+Toda mudança: issue → branch própria → Pull Request → verificações → merge. Nunca push
+direto na `main`, que é protegida no servidor sem ator de exceção.
+
+Ver [`CLAUDE.md`](CLAUDE.md) para o guia operacional e
+[`.specify/memory/constitution.md`](.specify/memory/constitution.md) para as normas — em
+conflito, a constituição prevalece.
 
 ## Licença
 
-A definir na feature 001.
+**Apache-2.0.** Ver [`LICENSE`](LICENSE) e [`NOTICE`](NOTICE).

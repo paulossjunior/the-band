@@ -45,3 +45,7 @@ Thumbs.db
 # Temporários
 /tmp/
 npm-debug.log
+
+# PLT do Dialyzer — gerado, cacheado no CI, nunca versionado
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

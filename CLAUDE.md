@@ -20,8 +20,19 @@ ferramentas, nem chatbot ligado ao banco.
 
 **Fase 0 concluída (bootstrap).** Ainda NÃO existe aplicação Phoenix.
 
+> **Repositório é PÚBLICO.** Histórico, especificações e mensagens de commit são
+> visíveis e indexáveis por qualquer pessoa. Nunca versione credencial, token, chave ou
+> `.env` real — aqui isso é vazamento imediato, não achado a corrigir depois. Escreva
+> todo artefato assumindo leitura externa.
+>
+> **A linha principal é protegida no servidor** pelo conjunto de regras `protect-main`,
+> sem atores de exceção: sem escrita direta, sem reescrita de histórico, sem remoção;
+> exige Pull Request com 1 aprovação, descarte de aprovação obsoleta, aprovação do
+> último envio e resolução de comentários. Sempre trabalhe em branch e abra PR.
+
 | Item | Estado |
 |---|---|
+| Repositório | público, `main` protegida por `protect-main` |
 | Spec Kit (`.specify/`, `.claude/skills/`) | instalado, integração `claude` |
 | `constitution.md` | v1.0.0 ratificada |
 | Elixir / Erlang OTP | 1.20.2 / OTP 29 (via Homebrew) |
@@ -74,9 +85,27 @@ Dependência vai do específico para o geral.
 Conceito que já existe em ontologia mais geral é reutilizado, nunca duplicado.
 `Person` pertence a EO; SRO, CIRO e CDRO só referenciam pessoas em papéis contextuais.
 
+### Termo canônico: Tenant ≠ Organização
+
+| Termo | Significado | Onde |
+|---|---|---|
+| **Tenant** | unidade de isolamento da instalação — quem contrata e opera este The Band. Coluna `tenant_id`. | feature 001 |
+| **Organização** | organização do mundo real analisada — `eo.organization`, objeto social do domínio | feature 005, EO |
+
+Um Tenant contém **várias** Organizações. Consultoria que analisa 12 clientes = 1 Tenant,
+12 `eo.organization`. `eo_organizations` tem `tenant_id`; não é redundância.
+
+**Nunca** use "organização" como sinônimo de Tenant, em código, spec, commit ou revisão.
+Fundir os dois destrói a capacidade de comparar organizações dentro do mesmo contratante —
+a pergunta central do produto.
+
 ### Distinções semânticas que não podem ser violadas
 
-- `Person` ≠ `Team Member` (papel) ≠ `Team Membership` (relação contextual)
+- **Tenant** ≠ `eo.organization` (ver acima)
+- `Person` ≠ `Team Member` (papel) ≠ `Team Membership` (relação contextual). Pessoa é
+  agente físico, existe independente de organização, e **não** tem `organization_id` —
+  participa por vínculo com papel e período. Sem isso, "quais pessoas acumulam papéis?" e
+  cycle time por equipe ficam inrespondíveis.
 - `Intended Process` ≠ `Performed Process`
 - `Code` ≠ `Program`
 - documento de requisitos ≠ requisito
@@ -182,8 +211,29 @@ Commits: `tipo(escopo): descrição imperativa` — ex.
 `feat(cmpo): add change request schema`, `fix(cmpo): prevent duplicate commit
 ingestion`. Nunca mensagem vaga.
 
-Nunca push direto na main. Nunca merge com teste falhando. Nunca aprovar o próprio PR.
+Nunca push direto na main. Nunca merge com teste falhando.
 Documentação, contratos, migrações, YAMLs e testes vão no mesmo PR do código.
+
+### Mantenedor único (constituição 2.0.0)
+
+O repositório tem **uma única pessoa** com permissão de escrita, e o GitHub não permite
+aprovar o próprio PR — exigir aprovação humana tornaria toda incorporação impossível. A
+constituição substituiu a aprovação humana por **verificação mecânica**:
+
+- **Permanece obrigatório**: branch + PR sempre; escrita direta na main bloqueada no
+  servidor sem ator de exceção; **todos os quality gates registrados como status checks
+  obrigatórios**; resolução de comentários.
+- **Muda**: aprovações humanas exigidas = 0. Auto-merge permitido **só depois** de todas as
+  verificações obrigatórias passarem.
+- **Compensações obrigatórias**: todo requisito verificável precisa de verificação
+  automatizada; o PR declara requisito por requisito qual evidência o cobre; achado
+  `CRITICAL`/`HIGH` do `analyze` bloqueia o merge; revisão independente por outro agente,
+  **sem** tratá-la como equivalente a revisão humana.
+- **Reversão automática**: ao entrar a 2ª pessoa com permissão de escrita, a exigência de
+  aprovação humana volta sem nova emenda.
+
+**Risco aberto**: enquanto os status checks obrigatórios não existirem (tarefa T075 da
+feature 001), a proteção se reduz a "obrigatório passar por PR".
 
 ## Quality gates
 
@@ -229,7 +279,9 @@ Cada item tem ciclo próprio de Spec Kit.
 ## Restrições
 
 Não pode: programar sem Spec Kit, spec, plano, tarefas ou issue; push direto na main;
-aprovar o próprio PR; merge sem revisão; declarar sucesso sem evidência; remover teste
+merge com qualquer verificação obrigatória reprovada, ausente ou pendente; merge sem
+verificação independente (humana com 2+ mantenedores, mecânica com 1 — ver `Mantenedor
+único`); declarar sucesso sem evidência; remover teste
 para passar; inventar requisito; ampliar escopo silenciosamente; expor segredo; colocar
 segredo em YAML; misturar features independentes; alterar arquitetura sem ADR; mapear
 conceitos só por nome; ignorar proveniência; ignorar idempotência; criar dashboard sem

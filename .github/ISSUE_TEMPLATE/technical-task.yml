@@ -1,0 +1,54 @@
+name: Tarefa técnica
+description: Trabalho técnico que não é feature nem defeito
+labels: ["technical-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tarefa técnica não dispensa o Spec Kit quando altera comportamento, contrato ou
+        semântica. Se altera, abra um pedido de funcionalidade.
+
+        Isto é para trabalho de infraestrutura, ferramenta e manutenção que não muda o que a
+        plataforma faz.
+
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: O que fica diferente depois disto, e por que vale fazer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: escopo
+    attributes:
+      label: Escopo
+    validations:
+      required: true
+
+  - type: textarea
+    id: fora
+    attributes:
+      label: Fora de escopo
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidência esperada
+      description: |
+        Como se prova que ficou feito. Saída de execução, não afirmação. O princípio V da
+        constituição proíbe declarar sucesso sem evidência.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impacto
+    attributes:
+      label: Impacto
+      options:
+        - label: Altera comportamento observável — se marcado, precisa de ciclo do Spec Kit
+        - label: Altera contrato público
+        - label: Altera semântica ou conceito de ontologia
+        - label: Exige ADR (ver a lista de decisões que exigem ADR na constituição)
