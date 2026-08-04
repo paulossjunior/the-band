@@ -98,7 +98,19 @@ defmodule TheBand.MixProject do
       # Quality gates
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.2", only: :test}
+      {:mox, "~> 1.2", only: :test},
+
+      # FR-033 exige reprovar dependência com vulnerabilidade conhecida. `mix hex.audit`, que
+      # é embutido, só detecta pacote aposentado — não avisos de segurança. `mix_audit` compara
+      # `mix.lock` com a base de avisos do ecossistema Elixir.
+      #
+      # ATENÇÃO: `mix_audit` traz `yaml_elixir` e `yamerl` como dependências transitivas, e
+      # **isso não é a escolha de biblioteca YAML do projeto**. A biblioteca da base de
+      # conhecimento declarativa pertence à feature 002 e exige pesquisa própria de manutenção,
+      # segurança e compatibilidade, com ADR — conforme a constituição. Nada aqui antecipa essa
+      # decisão: estas dependências são `only: [:dev, :test]` e servem à ferramenta de
+      # auditoria, não ao domínio.
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
   end
 

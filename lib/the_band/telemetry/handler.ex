@@ -49,12 +49,23 @@ defmodule TheBand.Telemetry.Handler do
   @doc false
   @spec handle_event(:telemetry.event_name(), map(), map(), map()) :: :ok
   def handle_event(event, measurements, metadata, _config) do
+    # Tudo que vem de fora passa por `redact/1` ANTES de qualquer outra coisa, e nada é lido do
+    # mapa original depois disso.
+    #
+    # A versão anterior fazia `Map.put(:correlation_id, metadata[:correlation_id] || ...)`
+    # depois da redação, lendo do mapa **cru**. Não vazava — `correlation_id` não é chave
+    # sensível — mas era um caminho que contornava a redação, e um caminho desses só precisa
+    # ser apontado para a chave errada uma vez. Apontado em revisão independente e eliminado
+    # estruturalmente, em vez de comentado.
+    #
+    # `put_new_lazy/3`: se a correlação veio nos metadados, ela sobreviveu à redação e é
+    # mantida; se não veio, busca no processo, e só nesse caso.
     fields =
       metadata
       |> Map.merge(measurements)
       |> redact()
       |> Map.put(:event, Enum.join(event, "."))
-      |> Map.put(:correlation_id, metadata[:correlation_id] || Correlation.get())
+      |> Map.put_new_lazy(:correlation_id, &Correlation.get/0)
 
     level = level_for(event)
 

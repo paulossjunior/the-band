@@ -1,0 +1,134 @@
+# Verificação de segurança do The Band (FR-033).
+#
+# Duas coisas, e as duas reprovam a proposta de mudança:
+#   1. credencial versionada
+#   2. dependência com vulnerabilidade conhecida
+#
+# O repositório é PÚBLICO. Credencial versionada aqui não é achado a corrigir depois — é
+# incidente, e o histórico não esquece. Por isso a varredura roda sobre os commits da mudança,
+# e não apenas sobre a árvore atual.
+
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ELIXIR_VERSION: "1.20.2"
+  OTP_VERSION: "29.0.4"
+  MIX_ENV: test
+
+jobs:
+  secrets:
+    name: Credenciais versionadas
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Histórico completo: uma credencial removida no último commit continua no histórico
+          # de um repositório público, e continua utilizável.
+          fetch-depth: 0
+
+      - name: Varrer credenciais nos commits da mudança
+        # Varredura própria, por expressão regular, em vez de ação externa.
+        #
+        # A escolha é deliberada: uma ação de terceiro executa código com acesso ao repositório
+        # e ao token do fluxo, o que é superfície de cadeia de suprimentos aceita por
+        # conveniência. Os padrões abaixo são auditáveis e a lógica cabe na tela.
+        #
+        # Limitação registrada: isto pega credencial de formato conhecido, não segredo de alta
+        # entropia sem formato. A varredura da própria plataforma de hospedagem, ativa em
+        # repositório público, cobre parte disso. Um verificador dedicado é melhoria possível, e
+        # exigiria avaliar a superfície que ele adiciona.
+        run: |
+          set -euo pipefail
+
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          HEAD="${{ github.event.pull_request.head.sha || github.sha }}"
+
+          PADROES='ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|ghu_[A-Za-z0-9]{36}'
+          PADROES="$PADROES|ghs_[A-Za-z0-9]{36}|ghr_[A-Za-z0-9]{36}"
+          PADROES="$PADROES|github_pat_[A-Za-z0-9_]{22,}"
+          PADROES="$PADROES|AKIA[0-9A-Z]{16}"
+          PADROES="$PADROES|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+          PADROES="$PADROES|xox[baprs]-[A-Za-z0-9-]{10,}"
+          PADROES="$PADROES|sk-[A-Za-z0-9]{32,}"
+          PADROES="$PADROES|glpat-[A-Za-z0-9_-]{20,}"
+          PADROES="$PADROES|AIza[0-9A-Za-z_-]{35}"
+
+          if [ -n "$BASE" ] && git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "Varrendo ${BASE}..${HEAD}"
+            SAIDA="$(git diff "${BASE}".."${HEAD}" | grep -nEi "$PADROES" || true)"
+          else
+            echo "Base indisponível; varrendo a árvore inteira."
+            SAIDA="$(grep -rnEi "$PADROES" --exclude-dir=.git . || true)"
+          fi
+
+          if [ -n "$SAIDA" ]; then
+            echo "::error::Credencial versionada detectada. O repositório é PÚBLICO: trate como incidente, revogue a credencial e limpe o histórico."
+            echo "$SAIDA" | head -20
+            exit 1
+          fi
+
+          echo "Nenhuma credencial de formato conhecido encontrada."
+
+      - name: Arquivo de ambiente real não versionado
+        run: |
+          set -euo pipefail
+
+          # `.env.example` é esperado. Qualquer outro `.env` carrega valor real.
+          ENCONTRADOS="$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$' || true)"
+
+          if [ -n "$ENCONTRADOS" ]; then
+            echo "::error::Arquivo de ambiente real versionado:"
+            echo "$ENCONTRADOS"
+            exit 1
+          fi
+
+          echo "Apenas .env.example versionado."
+
+  dependencies:
+    name: Dependências vulneráveis
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Elixir e OTP
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+
+      - name: Restaurar cache de dependências
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            mix-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-
+
+      - name: Buscar dependências
+        run: mix deps.get
+
+      - name: Vulnerabilidades conhecidas
+        # `mix_audit` compara `mix.lock` com a base de avisos do ecossistema Elixir.
+        run: mix deps.audit
+
+      - name: Pacotes aposentados
+        # Embutido no Hex. Pacote aposentado não é necessariamente vulnerável, mas é sinal de
+        # que ninguém mais o mantém — e dependência não mantida é vulnerabilidade futura.
+        run: mix hex.audit
+
+      - name: Dependências declaradas e não usadas
+        # Dependência não usada é superfície sem contrapartida.
+        run: mix deps.unlock --check-unused

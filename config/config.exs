@@ -24,8 +24,12 @@ config :the_band, TheBand.Repo,
   migration_foreign_key: [column: :id, type: :binary_id],
   migration_timestamps: [type: :utc_datetime_usec]
 
-# Fila única nesta feature. As filas por fonte externa chegam com os conectores
-# (feature 025). `TheBand.Jobs.TenantHealthCheck` é o único trabalhador aqui.
+# Fila única nesta feature. As filas por fonte externa chegam com os conectores (feature 025).
+#
+# **Nenhum trabalhador existe ainda.** A infraestrutura está de pé — supervisão, migração,
+# fila — e o primeiro trabalhador, `TheBand.Jobs.TenantHealthCheck`, chega na issue #5. Um
+# comentário anterior aqui o descrevia como se já existisse; apontado em revisão independente,
+# porque comentário que afirma o que não existe é pior que ausência de comentário.
 config :the_band, Oban,
   repo: TheBand.Repo,
   queues: [default: 5],

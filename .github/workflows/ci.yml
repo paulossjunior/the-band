@@ -1,0 +1,155 @@
+# Verificação automática do The Band.
+#
+# Sob a cláusula `Mantenedor único` da constituição, este fluxo NÃO é conveniência: ele é o
+# substituto da revisão humana. A contagem de aprovações humanas exigidas é zero, e o que
+# impede mudança não verificada de entrar na linha principal são as verificações daqui,
+# registradas no servidor como obrigatórias.
+#
+# Ver .specify/memory/constitution.md, seção "Mantenedor único".
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancela execuções antigas do mesmo ramo: só o último envio importa, e manter os anteriores
+# desperdiça fila sem informar nada.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Fixadas de propósito, e iguais às verificadas localmente (research.md R1).
+  #
+  # Elixir 1.20 e OTP 29 são recentes. Sem fixar, uma atualização silenciosa do runner
+  # tornaria a verificação não reproduzível — e "passou no CI" perderia significado.
+  #
+  # OTP 29.0.4 é exatamente a versão local (erts 17.0.4). Subir é mudança deliberada, não
+  # efeito colateral.
+  ELIXIR_VERSION: "1.20.2"
+  OTP_VERSION: "29.0.4"
+  MIX_ENV: test
+
+jobs:
+  gates:
+    name: Quality gates
+    runs-on: ubuntu-24.04
+
+    services:
+      # FR-034 — as verificações executam contra armazenamento REAL provisionado pelo próprio
+      # processo de verificação. Banco simulado não provaria migração nem isolamento.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Elixir e OTP
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+
+      - name: Restaurar cache de dependências e build
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            mix-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-
+
+      - name: Buscar dependências
+        run: mix deps.get
+
+      - name: Compilar dependências
+        # SEM --warnings-as-errors de propósito: `oban 2.23.1` emite alerta próprio em
+        # Elixir 1.20 (`lib/oban/repo.ex:253`). É alerta da dependência, não do projeto, e
+        # reprovar por causa dele bloquearia a entrega por algo que não controlamos
+        # (research.md R1).
+        run: mix deps.compile
+
+      # ---- Portão 1 de 5 ----
+      - name: Formatação
+        run: mix format --check-formatted
+
+      # ---- Portão 2 de 5 ----
+      - name: Compilação sem alerta
+        # Aqui SIM --warnings-as-errors: alerta no nosso código é defeito.
+        #
+        # Precisa vir antes do Credo: `mix credo` não compila o projeto, e sem a compilação as
+        # checagens próprias do projeto não carregam (research.md R5).
+        run: mix compile --warnings-as-errors
+
+      # ---- Portão 3 de 5 ----
+      - name: Análise estática
+        # A guarda contra análise silenciosa é obrigatória, não zelo excessivo.
+        #
+        # Verificado: quando o Credo não consegue carregar uma checagem declarada, ele imprime
+        # "Ignoring an undefined check" e sai com código ZERO. O portão passaria e o critério
+        # de que todo acesso a dados passa pela abstração de escopo deixaria de ser verificado
+        # sem nada falhar — pior que a ausência da checagem, porque parece cumprido.
+        run: |
+          set -o pipefail
+          mix credo --strict 2>&1 | tee credo.log
+
+          if grep -q "Ignoring an undefined check" credo.log; then
+            echo "::error::Credo ignorou uma checagem declarada em .credo.exs. O portão passaria sem verificar nada. Confira o nome do módulo e o glob de `requires:`."
+            grep "Ignoring an undefined check" credo.log
+            exit 1
+          fi
+
+      - name: Restaurar cache do PLT do Dialyzer
+        uses: actions/cache@v4
+        with:
+          # Dois arquivos, um por ambiente. Nome fixo faria dev e test se sobrescreverem e
+          # forçarem reconstrução completa a cada troca — verificado.
+          path: priv/plts
+          key: plt-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            plt-${{ runner.os }}-otp${{ env.OTP_VERSION }}-elixir${{ env.ELIXIR_VERSION }}-
+
+      # ---- Portão 4 de 5 ----
+      - name: Análise de tipos
+        # Medido: ~1m23s construindo o PLT, ~4s com cache. Sem o cache acima, este passo
+        # sozinho consumiria um sexto do orçamento de 10 minutos em toda execução.
+        run: mix dialyzer
+
+      # ---- Portão 5 de 5 ----
+      - name: Testes
+        run: mix test
+
+      - name: Migrações aplicam e revertem
+        # SC-015. Contra o serviço PostgreSQL real, não simulado.
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+          mix ecto.rollback --all
+          mix ecto.migrate
+
+      - name: Testes de integração
+        # Excluídos da execução padrão por velocidade, obrigatórios aqui (FR-034).
+        #
+        # Nota: `--only` sai com código diferente de zero quando nenhum teste casa. Isso é
+        # desejado: se as etiquetas de integração desaparecerem, queremos saber.
+        run: mix test --only integration

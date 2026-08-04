@@ -1,0 +1,59 @@
+name: Pedido de funcionalidade
+description: Necessidade que pode virar uma feature do Spec Kit
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este formulário registra uma **necessidade**, não uma solução.
+
+        Nenhuma linha de código sai daqui direto: a necessidade precisa passar pelo ciclo do
+        Spec Kit — `specify`, `clarify`, `checklist`, `plan`, `tasks`, `taskstoissues`,
+        `analyze` — antes de virar implementação.
+
+  - type: textarea
+    id: necessidade
+    attributes:
+      label: Necessidade de informação ou de capacidade
+      description: Que pergunta alguém precisa responder, ou que decisão precisa apoiar?
+      placeholder: "Quanto tempo um Pull Request aguarda até receber a primeira revisão?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: decisao
+    attributes:
+      label: Decisão que isto apoia
+      description: |
+        Quem decide o quê com esta informação. A constituição proíbe métrica sem necessidade
+        de informação declarada, e proíbe painel sem decisão apoiada.
+    validations:
+      required: true
+
+  - type: input
+    id: stakeholders
+    attributes:
+      label: Quem precisa disto
+      placeholder: "engineering_manager, team_lead"
+    validations:
+      required: true
+
+  - type: textarea
+    id: ontologias
+    attributes:
+      label: Ontologias e conceitos possivelmente envolvidos
+      description: |
+        Palpite é aceitável — o agente semântico decide. Cite conceitos, não tabelas.
+
+        Cuidado: `Tenant` não é `eo.organization`. Pessoa não pertence a organização, participa
+        por papel e vínculo.
+    validations:
+      required: false
+
+  - type: textarea
+    id: fora
+    attributes:
+      label: Fora de escopo
+      description: O que esta necessidade explicitamente NÃO cobre.
+    validations:
+      required: false

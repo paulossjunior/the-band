@@ -1,0 +1,84 @@
+# Responsáveis por revisão, por área (FR-039).
+#
+# ## Estado atual: uma única pessoa mantenedora
+#
+# Com um único responsável, exigir revisão de proprietário de código seria exigir que ele
+# revisasse a si mesmo — e a plataforma de hospedagem não permite aprovar o próprio Pull
+# Request. Por isso `require_code_owner_review` está desligado no conjunto de regras
+# `protect-main`, e o que impede mudança não verificada de entrar é o conjunto de verificações
+# obrigatórias de status, conforme a cláusula `Mantenedor único` da constituição.
+#
+# Este arquivo existe agora para: declarar quem responde por cada área, e ficar pronto para o
+# momento em que houver uma segunda pessoa — quando a exigência de aprovação humana é
+# restaurada automaticamente, sem nova emenda (FR-036a).
+#
+# ## Ao adicionar a segunda pessoa mantenedora
+#
+# 1. Distribuir as áreas abaixo entre as pessoas, de forma que quem escreve não seja quem
+#    aprova na mesma área.
+# 2. Restaurar `required_approving_review_count: 1` no conjunto de regras.
+# 3. Considerar ligar `require_code_owner_review`.
+# 4. A cláusula `Mantenedor único` deixa de valer nesse momento, por reversão automática.
+
+# Padrão para tudo que não casar com regra mais específica.
+*                                   @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Governança e normas — mudança aqui prevalece sobre qualquer outra prática do projeto.
+# ---------------------------------------------------------------------------------------
+/.specify/memory/constitution.md    @paulossjunior
+/CLAUDE.md                          @paulossjunior
+/.github/                           @paulossjunior
+/LICENSE                            @paulossjunior
+/NOTICE                             @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Artefatos do Spec Kit — especificação, plano, tarefas e contratos.
+# ---------------------------------------------------------------------------------------
+/specs/                             @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Decisões arquiteturais. Reverter uma sem ler o registro é o erro que os ADRs previnem.
+# ---------------------------------------------------------------------------------------
+/docs/adr/                          @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Isolamento entre Tenants e registro operacional.
+#
+# É a fronteira de segurança da plataforma: um acesso que ignore o escopo vaza dado entre
+# contratantes. Área que mais exige revisão cuidadosa.
+# ---------------------------------------------------------------------------------------
+/lib/the_band/tenancy/              @paulossjunior
+/lib/the_band/tenancy.ex            @paulossjunior
+/lib/the_band/audit/                @paulossjunior
+/lib/the_band/audit.ex              @paulossjunior
+/lib/the_band/repo.ex               @paulossjunior
+
+# Checagens próprias de análise estática. Afrouxar uma delas é afrouxar um portão.
+/credo_checks/                      @paulossjunior
+/.credo.exs                         @paulossjunior
+/.dialyzer_ignore.exs               @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Módulos ontológicos (features 003 em diante).
+#
+# Aqui vive o risco de fusão de conceitos, que a constituição autoriza a bloquear feature.
+# ---------------------------------------------------------------------------------------
+/lib/the_band/ontology/             @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Base de conhecimento declarativa (feature 002). YAML aqui é artefato de domínio, não
+# configuração: mudança que altere semântica exige teste e revisão semântica.
+# ---------------------------------------------------------------------------------------
+/priv/knowledge_base/               @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Migrações. Irreversíveis em produção se estiverem erradas.
+# ---------------------------------------------------------------------------------------
+/priv/repo/migrations/              @paulossjunior
+
+# ---------------------------------------------------------------------------------------
+# Configuração de execução — onde um padrão inseguro chega a produção.
+# ---------------------------------------------------------------------------------------
+/config/runtime.exs                 @paulossjunior
+/.env.example                       @paulossjunior

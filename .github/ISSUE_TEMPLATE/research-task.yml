@@ -1,0 +1,59 @@
+name: Tarefa de pesquisa
+description: Investigação para decidir algo antes de implementar
+labels: ["research-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pesquisa aqui significa **verificar por execução**, não ler documentação e concluir.
+
+        Isto vem de experiência própria: a pesquisa da feature 001 concluiu que a migração de
+        trabalho assíncrono na versão 12 bastava, tendo aplicado a migração e executado quatro
+        trabalhos reais. Estava errado — a verificação usou uma configuração reduzida em que a
+        checagem de versão aceita 12, e com a árvore de supervisão real o arranque exige 14.
+
+        Exercite o caminho que a aplicação realmente usa, não o caso mínimo que faz a
+        biblioteca responder.
+
+  - type: textarea
+    id: pergunta
+    attributes:
+      label: Pergunta a responder
+      description: Uma pergunta decidível. "Investigar X" não é pergunta.
+      placeholder: "A biblioteca Y sustenta validação estrita de esquema com rejeição de campo desconhecido?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: decisao
+    attributes:
+      label: Decisão que depende desta resposta
+      description: Se nenhuma decisão depende, a pesquisa não é necessária agora.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas a comparar
+    validations:
+      required: true
+
+  - type: textarea
+    id: verificacao
+    attributes:
+      label: Como será verificado por execução
+      description: |
+        Qual caminho será exercitado, e por que ele corresponde ao uso real e não a um caso
+        mínimo.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: adr
+    attributes:
+      label: Registro
+      options:
+        - label: O resultado exige ADR (ver a lista de decisões que exigem ADR na constituição)
+        - label: O resultado será registrado em `research.md` da feature correspondente
+          required: true
