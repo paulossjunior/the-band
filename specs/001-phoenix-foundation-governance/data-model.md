@@ -94,7 +94,9 @@ escrita, satisfazendo FR-030 na origem em vez de mascarar na saída.
 
 ## `oban_jobs` e tabelas auxiliares
 
-Geridas pela migração do Oban (`Oban.Migration.up(version: 12)`), **verificado em R1**.
+Geridas pela migração do Oban (`Oban.Migration.up(version: 14)`). A v12 indicada na
+pesquisa original não satisfaz `verify_migrated!/1` com a árvore de supervisão real — ver a
+correção de R1 em [research.md](research.md).
 Não são modeladas por esta feature.
 
 Contrato de uso relevante ao modelo de dados:

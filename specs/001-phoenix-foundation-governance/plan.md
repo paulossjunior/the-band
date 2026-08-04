@@ -112,7 +112,7 @@ the-band/
 ├── .dialyzer_ignore.exs               # exigido por dialyxir (R3)
 ├── LICENSE                            # Apache-2.0 (FR-040)
 │
-├── credo_checks/                      # em elixirc_paths só de :dev e :test (R5)
+├── credo_checks/                      # carregado por `requires:` no .credo.exs (R5)
 │   └── no_direct_repo_access.ex       # SC-002 — fora de lib/ para não quebrar prod
 │
 ├── .github/
@@ -206,19 +206,29 @@ the-band/
 ```
 
 **Por que `credo_checks/` na raiz e não em `test/` nem em `lib/`** — verificado por execução
-(R5): `test/credo/` não é compilado em nenhum ambiente, porque
-`elixirc_paths(:test)` inclui apenas `["lib", "test/support"]`; e um módulo em `lib/` que
-usa `Credo.Check` **quebra `MIX_ENV=prod`**, porque `credo` é `only: [:dev, :test]`. A
-solução verificada é um diretório próprio incluído em `elixirc_paths` apenas para `:dev` e
-`:test`:
+(R5): `test/credo/` não é compilado em nenhum ambiente, porque `elixirc_paths(:test)` inclui
+apenas `["lib", "test/support"]`; e um módulo em `lib/` que usa `Credo.Check` **quebra
+`MIX_ENV=prod`**, porque `credo` é `only: [:dev, :test]`.
+
+**Mecanismo de carregamento: `requires:` no `.credo.exs`**, não `elixirc_paths`.
 
 ```elixir
-defp elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]
-defp elixirc_paths(:dev),  do: ["lib", "credo_checks"]
-defp elixirc_paths(_),     do: ["lib"]
+# .credo.exs
+requires: ["./credo_checks/**/*.ex"]
 ```
 
-Confirmado: `MIX_ENV=prod mix compile` não inclui a checagem no build de produção.
+Verificado com `_build` limpo: o Credo lê o código-fonte da checagem, detecta a violação e
+sai com código 16, **sem** o diretório estar em `elixirc_paths`. Isso remove a dependência
+de ordem entre compilação e análise estática.
+
+Adicionar o diretório a `elixirc_paths` **além** de `requires` produz
+`warning: redefining module` em cada execução, porque a checagem passaria a ser compilada e
+requerida. Portanto: `requires` sozinho.
+
+**Risco residual que permanece**: se o diretório for renomeado, ou o nome do módulo divergir
+do declarado em `checks.enabled`, o Credo emite `Ignoring an undefined check` e sai com
+código **0**. Verificado. É por isso que a guarda contra no-op silencioso continua
+obrigatória.
 
 **Structure Decision**: estrutura padrão de aplicação Phoenix com `lib/the_band` para o
 domínio e `lib/the_band_web` para a interface, conforme a organização de monorepo definida
@@ -334,8 +344,8 @@ Chave primária `binary_id` em ambas. Detalhes de campo, restrição e transiç�
    `slug ~ '^[a-z0-9-]{3,63}$'`. **Verificado em R8**: ambas rejeitam de fato no banco.
 2. `create_operational_events` — `tenant_id` `NOT NULL` com chave estrangeira
    `ON DELETE RESTRICT`, índice composto `(tenant_id, occurred_at)`.
-3. `add_oban_jobs` — `Oban.Migration.up(version: 12)` / `down(version: 1)`. **Verificado
-   em R1**.
+3. `add_oban_jobs` — `Oban.Migration.up(version: 14)` / `down(version: 1)`. A v12 foi corrigida para v14
+   durante a implementação — ver a correção de R1 em [research.md](research.md).
 
 Todas reversíveis. SC-015 exige aplicar e reverter sem erro em base vazia e em base já
 inicializada — coberto por `test/integration/migration_reversibility_test.exs`.

@@ -1,0 +1,38 @@
+# Ambiente local do The Band.
+#
+# Sobe APENAS o PostgreSQL. A aplicação executa no hospedeiro durante o desenvolvimento —
+# decisão registrada em Assumptions na especificação da feature 001. Não há imagem de
+# contêiner da aplicação nesta feature: publicação em ambiente produtivo está fora de
+# escopo e nenhum requisito funcional a exige.
+#
+# Uso:
+#   cp .env.example .env    # preencher os valores locais
+#   docker compose up -d
+#   mix ecto.setup
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: the_band_postgres
+    restart: unless-stopped
+    environment:
+      # Valores de DESENVOLVIMENTO LOCAL apenas. Nunca reutilizar fora daqui.
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-the_band_dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - the_band_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Sustenta o passo de inicialização do README: `docker compose up -d` só reporta
+      # saudável quando o banco aceita conexão de fato.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-the_band_dev}"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  the_band_pgdata:
+    name: the_band_pgdata

@@ -22,7 +22,7 @@ ambiente real.
 | `phoenix_live_view` | 1.2.8 | |
 | `ecto` / `ecto_sql` | 3.14.1 / 3.14.0 | |
 | `postgrex` | 0.22.3 | resolvido estável; a última publicada é `1.0.0-rc.1` (pre-release) e **não** deve ser fixada |
-| `oban` | 2.23.1 | migração v12 aplicada com sucesso |
+| `oban` | 2.23.1 | migração **v14** — ver a correção abaixo |
 | `req` | 0.7.2 | traz `finch`, `mint`, `nimble_options`, `nimble_pool` |
 | `credo` | 1.7.19 | ver R4 |
 | `dialyxir` | 1.4.7 | ver R3 |
@@ -34,6 +34,27 @@ ambiente real.
 **Rationale**: risco declarado na especificação era compatibilidade com Elixir e OTP
 recentes. Verificação empírica: `mix deps.get` resolveu tudo e
 `mix compile --warnings-as-errors` gerou todas as aplicações sem falhar.
+
+### Correção de R1 — versão da migração do Oban é 14, não 12
+
+Registrada durante a implementação da issue #2, em 2026-08-04.
+
+A pesquisa original concluiu que a v12 bastava, tendo aplicado a migração com sucesso e
+executado quatro trabalhos reais. **Estava errado, e o erro foi de método**: a verificação
+chamou `Oban.start_link/1` com `plugins: false`, e nessa configuração
+`Oban.Migration.verify_migrated!/1` aceita a v12. Com a árvore de supervisão real, que
+inclui `Oban.Plugins.Pruner`, o arranque falha:
+
+```text
+** (RuntimeError) Oban migrations are outdated. Found version 12, but version 14 is required.
+```
+
+**Lição para as próximas verificações de dependência**: exercitar o caminho que a aplicação
+realmente usa, não o caso mínimo que faz a biblioteca responder. Um teste que passa por
+configurar menos do que a produção usa não prova compatibilidade — prova apenas que o
+caminho reduzido funciona.
+
+Corrigido: `Oban.Migration.up(version: 14)`, aplicado e revertido com sucesso.
 
 **Achado sobre o gerador**: `mix phx.new .` em diretório **não vazio** pergunta
 `Are you sure you want to continue? [Yn]` e, sem entrada disponível, **aborta** com
@@ -211,20 +232,38 @@ em `:dev` nem em `:test`.
 `credo`, declarada `only: [:dev, :test]`. Um módulo em `lib/` que a use falha em
 `MIX_ENV=prod`.
 
-### A solução verificada
+### A solução verificada — `requires:` no `.credo.exs`
+
+Duas abordagens foram testadas. A segunda venceu.
+
+**Abordagem 1 — `elixirc_paths`:**
 
 ```elixir
 defp elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]
 defp elixirc_paths(:dev),  do: ["lib", "credo_checks"]
-defp elixirc_paths(_),     do: ["lib"]
 ```
 
-Resultados reais:
+Funciona, mas cria dependência de ordem: `mix credo` só encontra a checagem se `mix compile`
+já rodou.
+
+**Abordagem 2 — `requires:`, adotada:**
+
+```elixir
+# .credo.exs
+requires: ["./credo_checks/**/*.ex"]
+```
+
+O Credo lê o código-fonte da checagem por conta própria. Resultados reais:
 
 | Verificação | Resultado |
 |---|---|
-| `mix credo --strict` com violação em `lib/` | detecta e sai com **código 16** |
+| `mix credo --strict` com violação em `lib/`, **`_build` limpo**, sem `elixirc_paths` | detecta e sai com **código 16** |
 | `MIX_ENV=prod mix compile` | compila 14 arquivos em vez de 15; **nenhum** módulo de checagem no build de produção |
+| `requires` **e** `elixirc_paths` juntos | `warning: redefining module` a cada execução — **não combinar** |
+| diretório `credo_checks/` renomeado ou ausente | `Ignoring an undefined check` e **código 0** |
+
+A última linha é o motivo de a guarda contra no-op silencioso continuar obrigatória mesmo com
+`requires`.
 
 ### Achado grave: no-op silencioso
 

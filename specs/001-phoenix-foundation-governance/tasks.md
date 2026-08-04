@@ -60,16 +60,17 @@ verificadas em [research.md](research.md) R1.
 - [ ] T012 Implementar validação de variáveis obrigatórias em `config/runtime.exs`, falhando a inicialização com mensagem que **nomeia** a variável ausente — FR-007. Nenhum valor padrão inseguro
 - [ ] T013 [P] Teste em `test/the_band/runtime_config_test.exs` verificando que a ausência de cada variável obrigatória produz erro nomeando-a — FR-007
 - [ ] T014 Configurar Oban em `config/config.exs` e `config/test.exs` com uma fila `default`, e adicionar `Oban` à árvore de supervisão em `lib/the_band/application.ex`. Em teste usar `testing: :manual`
-- [ ] T015 Criar migração `priv/repo/migrations/*_add_oban_jobs.exs` com `Oban.Migration.up(version: 12)` e `Oban.Migration.down(version: 1)` — verificado em R1
+- [ ] T015 Criar migração `priv/repo/migrations/*_add_oban_jobs.exs` com `Oban.Migration.up(version: 14)` e `Oban.Migration.down(version: 1)`. **v14, não v12**: a pesquisa original testou com `plugins: false`, configuração em que `verify_migrated!/1` aceita v12; com `Oban.Plugins.Pruner` o arranque exige v14 — ver a correção de R1 em [research.md](research.md)
 - [ ] T016 [P] Implementar `TheBand.Telemetry.Correlation` em `lib/the_band/telemetry/correlation.ex`: geração e propagação do identificador de correlação — FR-029
 - [ ] T017 [P] Implementar plug `TheBandWeb.Plugs.CorrelationId` em `lib/the_band_web/plugs/correlation_id.ex`, propagando o cabeçalho `X-Correlation-Id` recebido ou gerando um, e devolvendo-o na resposta — FR-029
 - [ ] T018 Implementar `TheBand.Telemetry.Handler` em `lib/the_band/telemetry/handler.ex` emitindo registro estruturado com Tenant, correlação, identificador do trabalho, tentativa, duração, situação e código de erro — FR-028
 - [ ] T019 Implementar lista negra de chaves sensíveis usada pelo registro operacional (`token`, `secret`, `password`, `key`, `credential`, `authorization`) em `lib/the_band/telemetry/handler.ex` — FR-030
 - [ ] T020 [P] Teste em `test/the_band/telemetry/handler_test.exs` verificando que valor sob chave sensível é omitido ou mascarado — FR-030
 - [ ] T021 [P] Ajustar `test/support/data_case.ex` e `test/support/conn_case.ex` para `Ecto.Adapters.SQL.Sandbox`, e registrar a etiqueta `:integration` como excluída por padrão em `test/test_helper.exs`
-- [ ] T022 [P] Criar `test/support/tenancy_fixtures.ex` com auxiliares para criar Tenant ativo, Tenant inativo e evento operacional
+- [ ] T022 [P] Criar `test/support/tenancy_fixtures.ex` com auxiliares para criar Tenant ativo, Tenant inativo e evento operacional. **Executada na issue #4, não na #2**: os auxiliares referenciam `TheBand.Tenancy.Tenant` e `TheBand.Audit.OperationalEvent`, cujos schemas são T045 e T049. O arquivo não compila antes deles. Defeito de ordenação identificado durante a implementação da issue #2 e corrigido aqui em vez de contornado
 
 **Checkpoint**: aplicação sobe, Oban ativo, correlação propagando, base de teste pronta.
+T022 fica pendente e migra para a issue #4 por dependência de schema.
 
 ---
 
@@ -135,7 +136,7 @@ automatizado que nenhuma operação no contexto de um alcança o outro (SC-003).
 - [ ] T049 [P] [US2] Implementar schema `TheBand.Audit.OperationalEvent` em `lib/the_band/audit/operational_event.ex` com validação de chave sensível em `metadata` — FR-018, FR-030
 - [ ] T050 [US2] Implementar `TheBand.Audit.Queries` e `TheBand.Audit.Commands` em `lib/the_band/audit/`, aplicando filtro por `tenant_id` a partir do escopo em toda consulta e contagem — FR-019, FR-020
 - [ ] T051 [US2] Implementar a API pública `TheBand.Audit` em `lib/the_band/audit.ex` recebendo `Scope.t()` como primeiro argumento em toda função escopada, e **levantando** quando não recebe escopo — FR-014, FR-018 a FR-020
-- [ ] T052 [US2] Ajustar `elixirc_paths` em `mix.exs` para `elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]` e `elixirc_paths(:dev), do: ["lib", "credo_checks"]`, mantendo `elixirc_paths(_), do: ["lib"]`. **Verificado em R5**: `test/credo/` não compila em nenhum ambiente, e a checagem em `lib/` quebraria `MIX_ENV=prod` porque `credo` é `only: [:dev, :test]`
+- [ ] T052 [US2] Declarar `requires: ["./credo_checks/**/*.ex"]` em `.credo.exs`. **Não** adicionar `credo_checks` a `elixirc_paths`: verificado em R5 que combinar os dois produz `warning: redefining module` a cada execução. `requires` sozinho carrega a checagem com `_build` limpo, o que remove a dependência de ordem entre compilação e análise estática
 - [ ] T053 [US2] Implementar checagem customizada de Credo em `credo_checks/no_direct_repo_access.ex` que reprova chamada direta a `TheBand.Repo.<função>` fora de `TheBand.Tenancy.*`, `TheBand.Audit.*`, `TheBand.Repo.Migrations.*` e `Mix.Tasks.TheBand.*`, e registrá-la em `.credo.exs` — SC-002, R5
 - [ ] T054 [P] [US2] Teste em `test/the_band/credo_check_test.exs` verificando a própria lista de módulos autorizados, para que ampliá-la seja mudança visível em revisão, **e** afirmando que `TheBand.Credo.Check.NoDirectRepoAccess` está carregável — SC-002
 - [ ] T055 [US2] Garantir que `MIX_ENV=prod mix compile` conclui sem incluir nenhum módulo de `credo_checks/` no build de produção — verificado em R5, deve permanecer verdadeiro
@@ -248,9 +249,9 @@ Rastreabilidade exigida pela constituição: necessidade → especificação →
 
 | Issue | Fase | Tarefas | Branch |
 |---|---|---|---|
-| [#2](https://github.com/paulossjunior/the-band/issues/2) Fundação | 1 e 2 | T001–T022 | `feature/2-fundacao-base` |
+| [#2](https://github.com/paulossjunior/the-band/issues/2) Fundação | 1 e 2 | T001–T021 | `feature/2-fundacao-base` |
 | [#3](https://github.com/paulossjunior/the-band/issues/3) US1 🎯 MVP | 3 | T023–T034 | `feature/3-ambiente-e-saude` |
-| [#4](https://github.com/paulossjunior/the-band/issues/4) US2 | 4 | T035–T058 | `feature/4-isolamento-tenant` |
+| [#4](https://github.com/paulossjunior/the-band/issues/4) US2 | 4 | **T022** + T035–T058 | `feature/4-isolamento-tenant` |
 | [#5](https://github.com/paulossjunior/the-band/issues/5) US3 | 5 | T059–T068 | `feature/5-trabalho-assincrono` |
 | [#6](https://github.com/paulossjunior/the-band/issues/6) US4 | 6 | T069–T082 | `feature/6-verificacao-obrigatoria` |
 | [#7](https://github.com/paulossjunior/the-band/issues/7) US5 | 7 | T083–T088 | `docs/7-adrs` |
