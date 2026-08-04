@@ -211,8 +211,29 @@ Commits: `tipo(escopo): descrição imperativa` — ex.
 `feat(cmpo): add change request schema`, `fix(cmpo): prevent duplicate commit
 ingestion`. Nunca mensagem vaga.
 
-Nunca push direto na main. Nunca merge com teste falhando. Nunca aprovar o próprio PR.
+Nunca push direto na main. Nunca merge com teste falhando.
 Documentação, contratos, migrações, YAMLs e testes vão no mesmo PR do código.
+
+### Mantenedor único (constituição 2.0.0)
+
+O repositório tem **uma única pessoa** com permissão de escrita, e o GitHub não permite
+aprovar o próprio PR — exigir aprovação humana tornaria toda incorporação impossível. A
+constituição substituiu a aprovação humana por **verificação mecânica**:
+
+- **Permanece obrigatório**: branch + PR sempre; escrita direta na main bloqueada no
+  servidor sem ator de exceção; **todos os quality gates registrados como status checks
+  obrigatórios**; resolução de comentários.
+- **Muda**: aprovações humanas exigidas = 0. Auto-merge permitido **só depois** de todas as
+  verificações obrigatórias passarem.
+- **Compensações obrigatórias**: todo requisito verificável precisa de verificação
+  automatizada; o PR declara requisito por requisito qual evidência o cobre; achado
+  `CRITICAL`/`HIGH` do `analyze` bloqueia o merge; revisão independente por outro agente,
+  **sem** tratá-la como equivalente a revisão humana.
+- **Reversão automática**: ao entrar a 2ª pessoa com permissão de escrita, a exigência de
+  aprovação humana volta sem nova emenda.
+
+**Risco aberto**: enquanto os status checks obrigatórios não existirem (tarefa T075 da
+feature 001), a proteção se reduz a "obrigatório passar por PR".
 
 ## Quality gates
 
@@ -258,7 +279,9 @@ Cada item tem ciclo próprio de Spec Kit.
 ## Restrições
 
 Não pode: programar sem Spec Kit, spec, plano, tarefas ou issue; push direto na main;
-aprovar o próprio PR; merge sem revisão; declarar sucesso sem evidência; remover teste
+merge com qualquer verificação obrigatória reprovada, ausente ou pendente; merge sem
+verificação independente (humana com 2+ mantenedores, mecânica com 1 — ver `Mantenedor
+único`); declarar sucesso sem evidência; remover teste
 para passar; inventar requisito; ampliar escopo silenciosamente; expor segredo; colocar
 segredo em YAML; misturar features independentes; alterar arquitetura sem ADR; mapear
 conceitos só por nome; ignorar proveniência; ignorar idempotência; criar dashboard sem

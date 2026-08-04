@@ -209,13 +209,15 @@ e reverter:
 
 ---
 
-## 7. Proteção da linha principal (SC-011) — **exige execução, não leitura de configuração**
+## 7. Proteção da linha principal (SC-011, SC-011a) — **exige execução, não leitura de configuração**
 
-Este é o único critério que a fase de especificação **não** pôde provar. A configuração já
-está confirmada no servidor, mas o comportamento precisa ser observado.
+Os dois únicos critérios que a especificação e o plano **não** puderam provar. A
+configuração está confirmada no servidor, mas o comportamento precisa ser observado.
+
+### 7.1 Escrita direta é rejeitada (SC-011)
 
 ```bash
-git checkout main
+git switch main
 git commit --allow-empty -m "probe: verificar protecao da linha principal"
 git push origin main          # DEVE ser rejeitado pelo servidor
 git reset --hard origin/main  # descartar o commit local de teste
@@ -224,10 +226,46 @@ git reset --hard origin/main  # descartar o commit local de teste
 **Esperado**: o envio é rejeitado, inclusive para quem administra o repositório. Registrar
 a saída de erro como evidência no PR.
 
-### Revisão obrigatória
+### 7.2 Incorporação com verificação pendente é bloqueada (SC-011a)
 
-Abrir proposta de mudança, aguardar os portões passarem, e confirmar que a incorporação
-fica bloqueada sem aprovação de outra pessoa.
+Este é o **substituto mecânico da aprovação humana** sob a cláusula `Mantenedor único` da
+constituição. Sem ele, a cláusula fica sem lastro e a proteção se reduz a exigir PR.
+
+```bash
+gh api repos/paulossjunior/the-band/rulesets/20343491 \
+  --jq '[.rules[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context]'
+```
+
+**Esperado**: todas as verificações de `ci.yml` e `security.yml` listadas.
+
+Depois, com uma verificação deliberadamente reprovada, e em seguida com uma pendente,
+tentar incorporar de fato:
+
+```bash
+gh pr merge <numero> --squash    # DEVE ser recusado nos dois casos
+```
+
+**Esperado**: recusa do servidor nos dois casos. Registrar as duas saídas como evidência.
+
+### 7.3 Nenhum ator de exceção (FR-036)
+
+```bash
+gh api repos/paulossjunior/the-band/rulesets/20343491 --jq '.bypass_actors'
+```
+
+**Esperado**: `[]`. Qualquer ator de exceção esvazia SC-011 justamente para quem mais
+escreve.
+
+### 7.4 Revisão humana — apenas com mais de uma pessoa mantenedora
+
+```bash
+gh api repos/paulossjunior/the-band/collaborators --jq 'length'
+```
+
+Se o resultado for maior que 1, a cláusula `Mantenedor único` deixa de valer por reversão
+automática: confirmar que a incorporação fica bloqueada sem aprovação de outra pessoa
+(FR-036a). Se for 1, este passo não se aplica e 7.2 é o que sustenta a verificação
+independente.
 
 ---
 
@@ -274,10 +312,11 @@ de rejeitar — é o que justifica a escolha do mecanismo.
 | SC-008 | 4 |
 | SC-009 | 2 |
 | SC-010, SC-012 | 6 |
-| SC-011 | **7** |
+| SC-011 | **7.1** |
+| SC-011a | **7.2** |
 | SC-013 | 8 |
 | SC-014 | 9 |
 | SC-015 | 3 |
 | SC-016 | 5 |
 
-Todos os 16 critérios têm caminho de verificação executável.
+Todos os 17 critérios têm caminho de verificação executável.

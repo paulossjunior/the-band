@@ -195,9 +195,11 @@ observar a reprovação; corrigir e observar a aprovação (SC-010).
 - [ ] T072 [P] [US4] Criar `.github/ISSUE_TEMPLATE/feature-request.yml`, `bug-report.yml`, `technical-task.yml` e `research-task.yml` — FR-038
 - [ ] T073 [P] [US4] Criar `.github/CODEOWNERS` declarando responsáveis por revisão das áreas do código — FR-039
 - [ ] T074 [US4] **Evidência de SC-011**: executar o bloco 7 de [quickstart.md](quickstart.md) — tentativa real de envio direto à linha principal — e anexar a saída de erro ao PR — FR-036. A configuração de `protect-main` já está confirmada no servidor, mas o comportamento ainda **não** foi observado; o princípio V da constituição proíbe declarar sucesso sem evidência
-- [ ] T075 [US4] **Evidência de FR-035**: com todos os portões aprovados e nenhuma aprovação registrada, confirmar que a incorporação na linha principal fica bloqueada, e anexar a evidência ao PR — SC-011
-- [ ] T076 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
-- [ ] T077 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
+- [ ] T075 [US4] Registrar no conjunto de regras `protect-main` **todas** as verificações de `ci.yml` e `security.yml` como verificações obrigatórias de status (`required_status_checks`), de modo que a incorporação seja impossível com qualquer uma reprovada, ausente ou pendente — FR-035. **Encerra o risco residual** da cláusula `Mantenedor único` da constituição: até esta tarefa, a proteção se reduz a exigir Pull Request
+- [ ] T076 [US4] **Evidência de SC-011a**: com uma verificação obrigatória deliberadamente reprovada, e depois com uma pendente, tentar incorporar de fato e confirmar que o servidor bloqueia nos dois casos. Anexar a evidência ao PR — este é o substituto mecânico da aprovação humana; sem ele a cláusula `Mantenedor único` fica sem lastro
+- [ ] T077 [US4] Verificar que `bypass_actors` do conjunto de regras permanece **vazio** após T075, inclusive para quem administra o repositório, e registrar no `README.md` a condição de reversão automática: ao entrar a segunda pessoa com permissão de escrita, restaurar `required_approving_review_count: 1` sem nova emenda — FR-036, FR-036a, SC-011. Ver bloco 7.3 e 7.4 de [quickstart.md](quickstart.md)
+- [ ] T078 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
+- [ ] T079 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
 
 **Checkpoint**: os princípios do projeto passam a ser obrigação executada pelo servidor.
 
@@ -213,12 +215,12 @@ alternativas descartadas usando só o repositório.
 
 ### Implementation for User Story 5
 
-- [ ] T078 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
-- [ ] T079 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
-- [ ] T080 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
-- [ ] T081 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
-- [ ] T082 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
-- [ ] T083 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
+- [ ] T080 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
+- [ ] T081 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
+- [ ] T082 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
+- [ ] T083 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
+- [ ] T084 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
+- [ ] T085 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
 
 **Checkpoint**: decisões estruturais recuperáveis sem perguntar a ninguém.
 
@@ -226,13 +228,13 @@ alternativas descartadas usando só o repositório.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T084 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
-- [ ] T085 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
-- [ ] T086 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
-- [ ] T087 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
-- [ ] T088 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos 16 critérios com a evidência de cada um
-- [ ] T089 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
-- [ ] T090 Abrir o Pull Request usando o modelo de T071, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
+- [ ] T086 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
+- [ ] T087 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
+- [ ] T088 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
+- [ ] T089 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
+- [ ] T090 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos 16 critérios com a evidência de cada um
+- [ ] T091 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
+- [ ] T092 Abrir o Pull Request usando o modelo de T071, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
 
 ---
 
@@ -274,7 +276,7 @@ duplicar a validação de Tenant no trabalhador criaria duas fontes da mesma reg
 - T013, T016, T017, T020, T021, T022 em paralelo dentro da Fase 2
 - Todos os testes de uma mesma história em paralelo (T023 a T027; T035 a T042; T056 a T060)
 - T043 e T044 em paralelo (migrações independentes)
-- T071 a T073 em paralelo; T078 a T081 em paralelo
+- T071 a T073 em paralelo; T080 a T083 em paralelo
 - Com equipe: US1, US2, US4 e US5 em paralelo depois da Fase 2. US3 espera US2
 
 ---

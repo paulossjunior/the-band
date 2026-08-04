@@ -156,7 +156,8 @@ rejeição registrada.
 
 Quem mantém o repositório precisa da garantia de que nenhuma mudança chega à linha
 principal sem passar por verificação automática de formatação, compilação sem alerta,
-análise estática, análise de tipos e testes — e sem revisão de outra pessoa.
+análise estática, análise de tipos e testes, todas registradas como obrigatórias no
+servidor — e, quando houver mais de uma pessoa mantenedora, sem revisão de outra pessoa.
 
 **Why this priority**: É o mecanismo que converte os princípios do projeto em obrigação
 executável em vez de recomendação. Sem ele, os princípios são texto.
@@ -177,11 +178,14 @@ cada verificação e observar a reprovação automática; corrigir e observar a 
 5. **Given** proposta de mudança que introduz credencial ou dependência com
    vulnerabilidade conhecida, **When** a verificação de segurança executa, **Then** ela
    reprova e identifica o achado.
-6. **Given** proposta de mudança aprovada em todas as verificações, **When** ninguém
-   revisou, **Then** a incorporação na linha principal é impedida.
-7. **Given** tentativa de escrita direta na linha principal, **When** o envio é executado,
+6. **Given** proposta de mudança com qualquer verificação obrigatória reprovada, ausente ou
+   pendente, **When** se tenta incorporar, **Then** o servidor bloqueia a incorporação.
+7. **Given** repositório com mais de uma pessoa com permissão de escrita e proposta
+   aprovada em todas as verificações, **When** ninguém revisou, **Then** a incorporação é
+   impedida.
+8. **Given** tentativa de escrita direta na linha principal, **When** o envio é executado,
    **Then** o servidor o rejeita, inclusive para quem administra o repositório.
-8. **Given** todas as verificações executando, **When** o tempo total é medido, **Then**
+9. **Given** todas as verificações executando, **When** o tempo total é medido, **Then**
    fica dentro do limite definido em Success Criteria.
 
 ---
@@ -337,11 +341,18 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
   credencial versionada e dependência com vulnerabilidade conhecida.
 - **FR-034**: A verificação automática MUST executar contra armazenamento de dados real
   provisionado pelo próprio processo de verificação.
-- **FR-035**: A incorporação na linha principal MUST exigir aprovação de pessoa diferente
-  de quem propôs a mudança.
+- **FR-035**: A incorporação na linha principal MUST ser impossível enquanto qualquer
+  verificação obrigatória estiver reprovada, ausente ou pendente. Todas as verificações de
+  FR-031 e FR-033 MUST estar registradas no servidor como verificações obrigatórias de
+  status, não apenas executadas.
 - **FR-036**: A linha principal MUST ser protegida no servidor contra escrita direta,
   reescrita de histórico e remoção, sem ator de exceção — inclusive para quem administra
   o repositório.
+- **FR-036a**: Enquanto o repositório tiver mais de uma pessoa com permissão de escrita, a
+  incorporação MUST exigir aprovação de pessoa diferente de quem propôs a mudança. Com uma
+  única pessoa com permissão de escrita, a exigência de aprovação humana MUST ser
+  substituída pela verificação mecânica de FR-035, e MUST NOT ser dispensada sem
+  substituto — conforme a cláusula `Mantenedor único` da constituição.
 - **FR-037**: O repositório MUST conter modelo de proposta de mudança exigindo escopo,
   fora de escopo, testes, resultado das verificações e evidências.
 - **FR-038**: O repositório MUST conter modelos de solicitação para pedido de
@@ -424,9 +435,14 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
   de operação válida.
 - **SC-010**: Uma proposta de mudança contendo violação deliberada de qualquer uma das
   cinco verificações é reprovada automaticamente em **100%** dos casos.
-- **SC-011**: Nenhuma mudança alcança a linha principal sem aprovação de outra pessoa, e
-  **100%** das tentativas de escrita direta na linha principal são rejeitadas pelo
-  servidor — verificado por tentativa real de envio, não por leitura de configuração.
+- **SC-011**: **100%** das tentativas de escrita direta na linha principal são rejeitadas
+  pelo servidor, inclusive para quem administra o repositório — verificado por tentativa
+  real de envio, não por leitura de configuração.
+- **SC-011a**: **100%** das tentativas de incorporação com qualquer verificação obrigatória
+  reprovada, ausente ou pendente são bloqueadas pelo servidor — verificado por tentativa
+  real de incorporação, não por leitura de configuração. Este critério é o substituto
+  mecânico da aprovação humana sob a cláusula `Mantenedor único`; enquanto ele não estiver
+  satisfeito, a proteção se reduz a exigir proposta de mudança.
 - **SC-012**: O conjunto completo de verificações automáticas conclui em **até 10
   minutos** desde a abertura da proposta de mudança.
 - **SC-013**: **Zero** credencial, token, chave ou arquivo de ambiente real versionado,
@@ -501,6 +517,7 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
 - Q: A verificação de saúde é pública ou restrita? → A: Dois níveis — pública informa apenas se está viva; detalhada por componente exige credencial de operação.
 - Q: Qual é o termo canônico para a unidade de isolamento? → A: Tenant. "Organização" fica reservado exclusivamente para `eo.organization`, na feature 005.
 - Q: O que identifica um Tenant de forma única? → A: Identificador legível único na instalação, imutável, no formato de letras minúsculas, dígitos e hífen com 3 a 63 caracteres; nome livre e alterável.
+- Q: Com uma única pessoa com permissão de escrita, como satisfazer a exigência de aprovação por outra pessoa, se a hospedagem não permite aprovar o próprio Pull Request? → A: Emenda da constituição (2.0.0, cláusula `Mantenedor único`): aprovação humana substituída por verificação mecânica obrigatória no servidor. FR-035 reescrito, FR-036a e SC-011a adicionados.
 
 **Nota de renumeração**: a integração destas clarificações adicionou requisitos em blocos
 temáticos existentes. Os requisitos funcionais foram renumerados de forma contígua
@@ -580,6 +597,52 @@ restringindo adoção corporativa) e proprietária (incoerente com repositório 
 **Risco residual em aberto**: entre a publicação do repositório e a criação do arquivo de
 licença, o conteúdo está público sem permissão de uso concedida. Janela conhecida e
 aceita; encerrada pela tarefa de FR-040.
+
+### Registro detalhado: verificação independente com mantenedor único
+
+**Context**: FR-035, FR-036a, SC-011a. A versão anterior de FR-035 exigia aprovação de
+pessoa diferente de quem propôs a mudança, espelhando a constituição v1.0.0.
+
+**Problema, detectado pelo `analyze` antes de qualquer código**: o repositório tem **uma
+única pessoa** com permissão de escrita. O conjunto de regras da linha principal exige uma
+aprovação e não tem ator de exceção, e a hospedagem não permite que a pessoa autora aprove
+o próprio Pull Request. Consequência: **nenhuma mudança poderia ser incorporada**. O
+requisito, como escrito, não protegia nada — apenas impedia a entrega. Descobrir isso na
+última tarefa, com as 90 concluídas e não incorporáveis, seria o pior momento possível.
+
+**Decision**: emenda da constituição para **2.0.0**, cláusula `Mantenedor único`. A
+aprovação humana é substituída por verificação mecânica obrigatória no servidor, mais
+estrita em tudo que pode ser automatizado.
+
+**Efeito nos requisitos**:
+
+- **FR-035** reescrito: a incorporação é impossível com qualquer verificação obrigatória
+  reprovada, ausente ou pendente, e as verificações precisam estar **registradas no
+  servidor**, não apenas executadas. Executar localmente deixa de ser suficiente.
+- **FR-036a** adicionado: aprovação humana volta a ser exigida automaticamente quando
+  houver mais de uma pessoa com permissão de escrita, sem nova emenda.
+- **SC-011** dividido: SC-011 cobre a rejeição de escrita direta; **SC-011a** cobre o
+  bloqueio de incorporação com verificação pendente — o substituto mecânico da aprovação.
+
+**Compensações obrigatórias**, porque nenhuma pessoa vai ler o diff de novo: todo requisito
+verificável precisa de verificação automatizada; a proposta de mudança declara requisito
+por requisito qual evidência o cobre; achado `CRITICAL` ou `HIGH` do `analyze` bloqueia a
+incorporação; e revisão independente por outro agente antes de incorporar, **sem** tratá-la
+como equivalente a revisão humana.
+
+**Alternativas descartadas**:
+
+- Adicionar segunda pessoa com permissão de escrita: preferível se a pessoa existir.
+  Registrada como caminho de reversão, coberta por FR-036a.
+- Adicionar quem administra como ator de exceção do conjunto de regras: esvaziaria FR-036 e
+  SC-011 justamente para quem mais escreve.
+- Manter o requisito e não incorporar nada: regra decorativa; contraria o princípio de
+  evidência antes de conclusão.
+
+**Risco residual registrado e aceito**: enquanto as verificações obrigatórias de status não
+existirem no servidor, a proteção se reduz a exigir proposta de mudança. Estado transitório,
+encerrado pelas tarefas que criam a verificação automática e registram os portões como
+obrigatórios.
 
 ### Registro detalhado: entidade que prova o isolamento
 
