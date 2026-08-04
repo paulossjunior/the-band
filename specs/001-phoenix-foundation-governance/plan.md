@@ -112,6 +112,9 @@ the-band/
 ├── .dialyzer_ignore.exs               # exigido por dialyxir (R3)
 ├── LICENSE                            # Apache-2.0 (FR-040)
 │
+├── credo_checks/                      # em elixirc_paths só de :dev e :test (R5)
+│   └── no_direct_repo_access.ex       # SC-002 — fora de lib/ para não quebrar prod
+│
 ├── .github/
 │   ├── CODEOWNERS
 │   ├── PULL_REQUEST_TEMPLATE.md
@@ -196,13 +199,26 @@ the-band/
     │   └── plugs/operator_secret_test.exs
     ├── contract/
     │   └── health_contract_test.exs
-    ├── integration/
-    │   ├── tenant_isolation_test.exs         # SC-003, SC-004
-    │   ├── idempotency_test.exs              # SC-007, lote de 10
-    │   └── migration_reversibility_test.exs  # SC-015
-    └── credo/
-        └── checks/no_direct_repo_access.ex   # SC-002
+    └── integration/
+        ├── tenant_isolation_test.exs         # SC-003, SC-004
+        ├── idempotency_test.exs              # SC-007, lote de 10
+        └── migration_reversibility_test.exs  # SC-015
 ```
+
+**Por que `credo_checks/` na raiz e não em `test/` nem em `lib/`** — verificado por execução
+(R5): `test/credo/` não é compilado em nenhum ambiente, porque
+`elixirc_paths(:test)` inclui apenas `["lib", "test/support"]`; e um módulo em `lib/` que
+usa `Credo.Check` **quebra `MIX_ENV=prod`**, porque `credo` é `only: [:dev, :test]`. A
+solução verificada é um diretório próprio incluído em `elixirc_paths` apenas para `:dev` e
+`:test`:
+
+```elixir
+defp elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]
+defp elixirc_paths(:dev),  do: ["lib", "credo_checks"]
+defp elixirc_paths(_),     do: ["lib"]
+```
+
+Confirmado: `MIX_ENV=prod mix compile` não inclui a checagem no build de produção.
 
 **Structure Decision**: estrutura padrão de aplicação Phoenix com `lib/the_band` para o
 domínio e `lib/the_band_web` para a interface, conforme a organização de monorepo definida
@@ -438,6 +454,7 @@ Marcados com etiqueta `:integration`, executados com PostgreSQL real.
 | Risco | Probabilidade | Mitigação |
 |---|---|---|
 | Sem RLS, acesso que ignore a abstração não é barrado pelo banco | média | checagem customizada de Credo (R5) reprova o PR; RLS registrada como feature futura com evidência já levantada |
+| **Checagem de Credo vira no-op silencioso**: `mix credo` não compila antes de rodar, e checagem não carregada apenas imprime aviso e sai com código 0 (R5). SC-002 deixaria de ser verificado sem nada falhar | **alta** se não mitigado | `mix compile` antes de `mix credo` na ordem dos portões, **mais** reprovação explícita quando o Credo emitir `Ignoring an undefined check`, **mais** teste afirmando que o módulo é carregável |
 | Primeira execução de CI sem cache aproxima-se dos 10 minutos de SC-012 | média | cache de `deps`/`_build` e de PLT com chave incluindo OTP, Elixir e hash de `mix.lock` (R3, R10) |
 | `.credo.exs` afrouxado além do necessário para acomodar código gerado | média | apenas `Design.AliasUsage` ajustado, com justificativa no próprio arquivo; nenhuma outra checagem estrita alterada (R4) |
 | Imutabilidade de `slug` imposta só na aplicação | baixa | teste dedicado; gatilho de banco registrado como opção se insuficiente (R8) |

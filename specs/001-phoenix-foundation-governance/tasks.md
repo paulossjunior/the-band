@@ -35,7 +35,7 @@ Aplicação Phoenix na raiz do repositório: `lib/the_band/`, `lib/the_band_web/
 **Purpose**: inicializar o projeto e as ferramentas de qualidade, com as versões
 verificadas em [research.md](research.md) R1.
 
-- [ ] T001 Gerar aplicação Phoenix na raiz com `mix phx.new . --app the_band --module TheBand --no-mailer --no-gettext --no-dashboard`, preservando `.git`, `.github/`, `.specify/`, `.claude/`, `specs/`, `CLAUDE.md`, `README.md` e `.gitignore` já existentes
+- [ ] T001 Gerar aplicação Phoenix na raiz com `echo Y | mix phx.new . --app the_band --module TheBand --no-mailer --no-gettext --no-dashboard`. O `echo Y` é **obrigatório**: em diretório não vazio o gerador pergunta `[Yn]` e **aborta** sem entrada disponível (R1, verificado). Confirmar depois que `.git`, `.github/`, `.specify/`, `.claude/`, `specs/`, `CLAUDE.md`, `README.md` e `.gitignore` sobreviveram, e decidir o que fazer com o `AGENTS.md` que o gerador 1.8.9 cria
 - [ ] T002 Fixar em `mix.exs` as versões verificadas em R1: `phoenix ~> 1.8.9`, `phoenix_live_view ~> 1.2`, `ecto_sql ~> 3.14`, `postgrex ~> 0.22`, `oban ~> 2.23`, `req ~> 0.7`, `jason ~> 1.4`, `credo ~> 1.7` e `dialyxir ~> 1.4` (ambos `only: [:dev, :test], runtime: false`), `mox ~> 1.2` (`only: :test`). Não usar `postgrex 1.0.0-rc` nem `jason 1.5.0-alpha` — são pre-release (R1)
 - [ ] T003 Declarar `elixir: "~> 1.20"` em `mix.exs` e registrar Elixir 1.20.2 / OTP 29 no `README.md`
 - [ ] T004 [P] Configurar `.formatter.exs` incluindo `priv/repo/migrations` e `.credo.exs` nos padrões de entrada
@@ -44,7 +44,7 @@ verificadas em [research.md](research.md) R1.
 - [ ] T007 [P] Criar `compose.yaml` com **apenas** o serviço PostgreSQL 17 (`postgres:17-alpine`), volume nomeado e verificação de prontidão. A aplicação executa no hospedeiro em desenvolvimento (Assumptions da spec)
 - [ ] T008 [P] Criar `.env.example` com todas as variáveis obrigatórias (`DATABASE_URL`, `SECRET_KEY_BASE`, `PHX_HOST`, `PORT`, `THE_BAND_OPERATOR_SECRET`) e **nenhum valor real** — FR-006
 - [ ] T009 [P] Criar `LICENSE` com o texto integral de Apache-2.0, titular do copyright e ano — FR-040. Encerra o risco residual de repositório público sem permissão de uso concedida
-- [ ] T010 Rodar os cinco portões localmente como linha de base e registrar a saída: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. `mix credo --strict` só passa com T005 concluída (R4)
+- [ ] T010 Rodar os cinco portões localmente como linha de base e registrar a saída, **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A ordem não é estética: **`mix credo` não compila o projeto antes de rodar** (R5), e sem a compilação a checagem customizada de SC-002 não carrega e o Credo sai com código 0. `mix credo --strict` só passa com T005 concluída (R4)
 
 **Checkpoint**: projeto compila, os cinco portões passam localmente, licença declarada.
 
@@ -135,10 +135,13 @@ automatizado que nenhuma operação no contexto de um alcança o outro (SC-003).
 - [ ] T049 [P] [US2] Implementar schema `TheBand.Audit.OperationalEvent` em `lib/the_band/audit/operational_event.ex` com validação de chave sensível em `metadata` — FR-018, FR-030
 - [ ] T050 [US2] Implementar `TheBand.Audit.Queries` e `TheBand.Audit.Commands` em `lib/the_band/audit/`, aplicando filtro por `tenant_id` a partir do escopo em toda consulta e contagem — FR-019, FR-020
 - [ ] T051 [US2] Implementar a API pública `TheBand.Audit` em `lib/the_band/audit.ex` recebendo `Scope.t()` como primeiro argumento em toda função escopada, e **levantando** quando não recebe escopo — FR-014, FR-018 a FR-020
-- [ ] T052 [US2] Implementar checagem customizada de Credo em `test/credo/checks/no_direct_repo_access.ex` que reprova chamada direta a `TheBand.Repo.<função>` fora de `TheBand.Tenancy.*`, `TheBand.Audit.*`, `TheBand.Repo.Migrations.*` e `Mix.Tasks.TheBand.*`, e registrá-la em `.credo.exs` — SC-002, R5
-- [ ] T053 [P] [US2] Teste em `test/credo/checks/no_direct_repo_access_test.exs` verificando a própria lista de módulos autorizados, para que ampliá-la seja mudança visível em revisão — SC-002
-- [ ] T054 [US2] Escrever `priv/repo/seeds.exs` criando um Tenant de desenvolvimento com `slug` válido — sustenta SC-001 e o bloco 4 de [quickstart.md](quickstart.md)
-- [ ] T055 [US2] Executar o bloco 4 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo que `count_events(nil)` levanta em vez de devolver `0` — SC-002 a SC-004, SC-008
+- [ ] T052 [US2] Ajustar `elixirc_paths` em `mix.exs` para `elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]` e `elixirc_paths(:dev), do: ["lib", "credo_checks"]`, mantendo `elixirc_paths(_), do: ["lib"]`. **Verificado em R5**: `test/credo/` não compila em nenhum ambiente, e a checagem em `lib/` quebraria `MIX_ENV=prod` porque `credo` é `only: [:dev, :test]`
+- [ ] T053 [US2] Implementar checagem customizada de Credo em `credo_checks/no_direct_repo_access.ex` que reprova chamada direta a `TheBand.Repo.<função>` fora de `TheBand.Tenancy.*`, `TheBand.Audit.*`, `TheBand.Repo.Migrations.*` e `Mix.Tasks.TheBand.*`, e registrá-la em `.credo.exs` — SC-002, R5
+- [ ] T054 [P] [US2] Teste em `test/the_band/credo_check_test.exs` verificando a própria lista de módulos autorizados, para que ampliá-la seja mudança visível em revisão, **e** afirmando que `TheBand.Credo.Check.NoDirectRepoAccess` está carregável — SC-002
+- [ ] T055 [US2] Garantir que `MIX_ENV=prod mix compile` conclui sem incluir nenhum módulo de `credo_checks/` no build de produção — verificado em R5, deve permanecer verdadeiro
+- [ ] T056 [US2] **Guarda contra no-op silencioso**: fazer o passo de análise estática reprovar quando a saída do Credo contiver `Ignoring an undefined check`. **Verificado em R5**: `mix credo` não compila antes de rodar, e checagem não carregada apenas imprime aviso e sai com código **0** — sem esta guarda, SC-002 pode deixar de ser verificado sem nada falhar
+- [ ] T057 [US2] Escrever `priv/repo/seeds.exs` criando um Tenant de desenvolvimento com `slug` válido — sustenta SC-001 e o bloco 4 de [quickstart.md](quickstart.md)
+- [ ] T058 [US2] Executar o bloco 4 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo que `count_events(nil)` levanta em vez de devolver `0` — SC-002 a SC-004, SC-008
 
 **Checkpoint**: isolamento provado por teste automatizado e imposto por análise estática.
 
@@ -158,19 +161,19 @@ na própria especificação da US3.
 
 ### Tests for User Story 3
 
-- [ ] T056 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` cobrindo os quatro casos verificados em R6, com `state` e `attempt` esperados: ativo → `completed`/1; sem `tenant_id` → `cancelled`/1; inativo → `cancelled`/1; inexistente → `cancelled`/1 — FR-022, FR-023, FR-024, SC-005, SC-006
-- [ ] T057 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que o motivo fica persistido em `errors` e é consultável — FR-027
-- [ ] T058 [P] [US3] Teste de integração em `test/integration/idempotency_test.exs` executando o mesmo trabalho 10 vezes com a mesma entrada e afirmando estado final idêntico ao de uma única execução — FR-026, SC-007
-- [ ] T059 [P] [US3] Teste em `test/integration/idempotency_test.exs` verificando que a segunda inserção com os mesmos argumentos devolve a mesma id com conflito marcado, em vez de criar segundo trabalho — FR-026, R7
-- [ ] T060 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que todo evento de telemetria do trabalho carrega Tenant, correlação, identificador do trabalho e tentativa — FR-028, SC-016
+- [ ] T059 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` cobrindo os quatro casos verificados em R6, com `state` e `attempt` esperados: ativo → `completed`/1; sem `tenant_id` → `cancelled`/1; inativo → `cancelled`/1; inexistente → `cancelled`/1 — FR-022, FR-023, FR-024, SC-005, SC-006
+- [ ] T060 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que o motivo fica persistido em `errors` e é consultável — FR-027
+- [ ] T061 [P] [US3] Teste de integração em `test/integration/idempotency_test.exs` executando o mesmo trabalho 10 vezes com a mesma entrada e afirmando estado final idêntico ao de uma única execução — FR-026, SC-007
+- [ ] T062 [P] [US3] Teste em `test/integration/idempotency_test.exs` verificando que a segunda inserção com os mesmos argumentos devolve a mesma id com conflito marcado, em vez de criar segundo trabalho — FR-026, R7
+- [ ] T063 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que todo evento de telemetria do trabalho carrega Tenant, correlação, identificador do trabalho e tentativa — FR-028, SC-016
 
 ### Implementation for User Story 3
 
-- [ ] T061 [US3] Implementar `TheBand.Jobs.TenantHealthCheck` em `lib/the_band/jobs/tenant_health_check.ex` seguindo a ordem de validação obrigatória de [contracts/worker.md](contracts/worker.md) e retornando `{:cancel, motivo}` — **nunca** `{:error, motivo}` — para Tenant ausente, inexistente ou inativo, porque `{:error, ...}` retentaria e violaria FR-024 (R6)
-- [ ] T062 [US3] Em `lib/the_band/jobs/tenant_health_check.ex`, registrar a execução via `TheBand.Audit.record_event/2` usando o escopo validado — FR-018, FR-021
-- [ ] T063 [US3] Anexar os manipuladores de telemetria de `[:the_band, :job, :start | :stop | :exception]` em `lib/the_band/telemetry/handler.ex`, com duração, tentativa, situação e código de erro — FR-028
-- [ ] T064 [US3] Definir a política de novas tentativas com espera crescente e limite máximo em `lib/the_band/jobs/tenant_health_check.ex` (`max_attempts` e `backoff/1`) — FR-025
-- [ ] T065 [US3] Executar o bloco 5 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo `attempt = 1` em todos os cancelados — SC-005 a SC-007, SC-016
+- [ ] T064 [US3] Implementar `TheBand.Jobs.TenantHealthCheck` em `lib/the_band/jobs/tenant_health_check.ex` seguindo a ordem de validação obrigatória de [contracts/worker.md](contracts/worker.md) e retornando `{:cancel, motivo}` — **nunca** `{:error, motivo}` — para Tenant ausente, inexistente ou inativo, porque `{:error, ...}` retentaria e violaria FR-024 (R6)
+- [ ] T065 [US3] Em `lib/the_band/jobs/tenant_health_check.ex`, registrar a execução via `TheBand.Audit.record_event/2` usando o escopo validado — FR-018, FR-021
+- [ ] T066 [US3] Anexar os manipuladores de telemetria de `[:the_band, :job, :start | :stop | :exception]` em `lib/the_band/telemetry/handler.ex`, com duração, tentativa, situação e código de erro — FR-028
+- [ ] T067 [US3] Definir a política de novas tentativas com espera crescente e limite máximo em `lib/the_band/jobs/tenant_health_check.ex` (`max_attempts` e `backoff/1`) — FR-025
+- [ ] T068 [US3] Executar o bloco 5 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo `attempt = 1` em todos os cancelados — SC-005 a SC-007, SC-016
 
 **Checkpoint**: trabalho assíncrono rejeita, não retenta o que não deve, e é idempotente.
 
@@ -186,20 +189,20 @@ observar a reprovação; corrigir e observar a aprovação (SC-010).
 
 ### Implementation for User Story 4
 
-- [ ] T066 [US4] Criar `.github/workflows/ci.yml` com `erlef/setup-beam` fixando Elixir 1.20.2 e OTP 29, PostgreSQL 17 como serviço do fluxo de trabalho, e os cinco portões: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test` — FR-031, FR-032, FR-034, R10
-- [ ] T067 [US4] Configurar no `ci.yml` cache de `deps` e `_build` e cache **separado** do PLT do Dialyzer, com chave incluindo versão de OTP, versão de Elixir e hash de `mix.lock` — o PLT leva 1m40s sem cache e 3s com cache (R3), e sem isso o orçamento de 10 minutos de SC-012 fica comprometido
-- [ ] T068 [US4] Incluir no `ci.yml` a execução de `mix ecto.migrate` e `mix test --only integration` contra o serviço PostgreSQL — FR-034
-- [ ] T069 [US4] Garantir que `mix deps.compile` **não** use `--warnings-as-errors`: `oban 2.23.1` emite alerta próprio em Elixir 1.20 (`lib/oban/repo.ex:253`), que é da dependência e não do projeto (R1)
-- [ ] T070 [US4] Criar `.github/workflows/security.yml` com verificação de credencial versionada e de dependência com vulnerabilidade conhecida (`mix deps.audit` ou equivalente), reprovando a proposta em caso de achado — FR-033
-- [ ] T071 [P] [US4] Criar `.github/PULL_REQUEST_TEMPLATE.md` exigindo escopo, fora de escopo, testes, resultado dos portões e evidências — FR-037
-- [ ] T072 [P] [US4] Criar `.github/ISSUE_TEMPLATE/feature-request.yml`, `bug-report.yml`, `technical-task.yml` e `research-task.yml` — FR-038
-- [ ] T073 [P] [US4] Criar `.github/CODEOWNERS` declarando responsáveis por revisão das áreas do código — FR-039
-- [ ] T074 [US4] **Evidência de SC-011**: executar o bloco 7 de [quickstart.md](quickstart.md) — tentativa real de envio direto à linha principal — e anexar a saída de erro ao PR — FR-036. A configuração de `protect-main` já está confirmada no servidor, mas o comportamento ainda **não** foi observado; o princípio V da constituição proíbe declarar sucesso sem evidência
-- [ ] T075 [US4] Registrar no conjunto de regras `protect-main` **todas** as verificações de `ci.yml` e `security.yml` como verificações obrigatórias de status (`required_status_checks`), de modo que a incorporação seja impossível com qualquer uma reprovada, ausente ou pendente — FR-035. **Encerra o risco residual** da cláusula `Mantenedor único` da constituição: até esta tarefa, a proteção se reduz a exigir Pull Request
-- [ ] T076 [US4] **Evidência de SC-011a**: com uma verificação obrigatória deliberadamente reprovada, e depois com uma pendente, tentar incorporar de fato e confirmar que o servidor bloqueia nos dois casos. Anexar a evidência ao PR — este é o substituto mecânico da aprovação humana; sem ele a cláusula `Mantenedor único` fica sem lastro
-- [ ] T077 [US4] Verificar que `bypass_actors` do conjunto de regras permanece **vazio** após T075, inclusive para quem administra o repositório, e registrar no `README.md` a condição de reversão automática: ao entrar a segunda pessoa com permissão de escrita, restaurar `required_approving_review_count: 1` sem nova emenda — FR-036, FR-036a, SC-011. Ver bloco 7.3 e 7.4 de [quickstart.md](quickstart.md)
-- [ ] T078 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
-- [ ] T079 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
+- [ ] T069 [US4] Criar `.github/workflows/ci.yml` com `erlef/setup-beam` fixando Elixir 1.20.2 e OTP 29, PostgreSQL 17 como serviço do fluxo de trabalho, e os cinco portões **nesta ordem**: `mix format --check-formatted`, `mix compile --warnings-as-errors`, `mix credo --strict`, `mix dialyzer`, `mix test`. A compilação precisa vir antes do Credo, senão a checagem de SC-002 não carrega (R5, e ver T056) — FR-031, FR-032, FR-034, R10
+- [ ] T070 [US4] Configurar no `ci.yml` cache de `deps` e `_build` e cache **separado** do PLT do Dialyzer, com chave incluindo versão de OTP, versão de Elixir e hash de `mix.lock` — o PLT leva 1m40s sem cache e 3s com cache (R3), e sem isso o orçamento de 10 minutos de SC-012 fica comprometido
+- [ ] T071 [US4] Incluir no `ci.yml` a execução de `mix ecto.migrate` e `mix test --only integration` contra o serviço PostgreSQL — FR-034
+- [ ] T072 [US4] Garantir que `mix deps.compile` **não** use `--warnings-as-errors`: `oban 2.23.1` emite alerta próprio em Elixir 1.20 (`lib/oban/repo.ex:253`), que é da dependência e não do projeto (R1)
+- [ ] T073 [US4] Criar `.github/workflows/security.yml` com verificação de credencial versionada e de dependência com vulnerabilidade conhecida (`mix deps.audit` ou equivalente), reprovando a proposta em caso de achado — FR-033
+- [ ] T074 [P] [US4] Criar `.github/PULL_REQUEST_TEMPLATE.md` exigindo escopo, fora de escopo, testes, resultado dos portões e evidências — FR-037
+- [ ] T075 [P] [US4] Criar `.github/ISSUE_TEMPLATE/feature-request.yml`, `bug-report.yml`, `technical-task.yml` e `research-task.yml` — FR-038
+- [ ] T076 [P] [US4] Criar `.github/CODEOWNERS` declarando responsáveis por revisão das áreas do código — FR-039
+- [ ] T077 [US4] **Evidência de SC-011**: executar o bloco 7 de [quickstart.md](quickstart.md) — tentativa real de envio direto à linha principal — e anexar a saída de erro ao PR — FR-036. A configuração de `protect-main` já está confirmada no servidor, mas o comportamento ainda **não** foi observado; o princípio V da constituição proíbe declarar sucesso sem evidência
+- [ ] T078 [US4] Registrar no conjunto de regras `protect-main` **todas** as verificações de `ci.yml` e `security.yml` como verificações obrigatórias de status (`required_status_checks`), de modo que a incorporação seja impossível com qualquer uma reprovada, ausente ou pendente — FR-035. **Encerra o risco residual** da cláusula `Mantenedor único` da constituição: até esta tarefa, a proteção se reduz a exigir Pull Request
+- [ ] T079 [US4] **Evidência de SC-011a**: com uma verificação obrigatória deliberadamente reprovada, e depois com uma pendente, tentar incorporar de fato e confirmar que o servidor bloqueia nos dois casos. Anexar a evidência ao PR — este é o substituto mecânico da aprovação humana; sem ele a cláusula `Mantenedor único` fica sem lastro
+- [ ] T080 [US4] Verificar que `bypass_actors` do conjunto de regras permanece **vazio** após T078, inclusive para quem administra o repositório, e registrar no `README.md` a condição de reversão automática: ao entrar a segunda pessoa com permissão de escrita, restaurar `required_approving_review_count: 1` sem nova emenda — FR-036, FR-036a, SC-011. Ver bloco 7.3 e 7.4 de [quickstart.md](quickstart.md)
+- [ ] T081 [US4] **Evidência de SC-010**: introduzir uma violação deliberada por portão, conforme a tabela do bloco 6 de [quickstart.md](quickstart.md), confirmar a reprovação de cada um e reverter
+- [ ] T082 [US4] Medir o tempo total do fluxo de verificação com cache aquecido e sem cache, e registrar contra o limite de 10 minutos — SC-012
 
 **Checkpoint**: os princípios do projeto passam a ser obrigação executada pelo servidor.
 
@@ -215,12 +218,12 @@ alternativas descartadas usando só o repositório.
 
 ### Implementation for User Story 5
 
-- [ ] T080 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
-- [ ] T081 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
-- [ ] T082 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
-- [ ] T083 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
-- [ ] T084 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
-- [ ] T085 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
+- [ ] T083 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
+- [ ] T084 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
+- [ ] T085 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
+- [ ] T086 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
+- [ ] T087 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
+- [ ] T088 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
 
 **Checkpoint**: decisões estruturais recuperáveis sem perguntar a ninguém.
 
@@ -228,13 +231,13 @@ alternativas descartadas usando só o repositório.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T086 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
-- [ ] T087 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
-- [ ] T088 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
-- [ ] T089 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
-- [ ] T090 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos 16 critérios com a evidência de cada um
-- [ ] T091 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
-- [ ] T092 Abrir o Pull Request usando o modelo de T071, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
+- [ ] T089 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
+- [ ] T090 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
+- [ ] T091 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
+- [ ] T092 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
+- [ ] T093 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos 16 critérios com a evidência de cada um
+- [ ] T094 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
+- [ ] T095 Abrir o Pull Request usando o modelo de T074, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
 
 ---
 
@@ -274,9 +277,9 @@ duplicar a validação de Tenant no trabalhador criaria duas fontes da mesma reg
 
 - T004 a T009 em paralelo (arquivos distintos)
 - T013, T016, T017, T020, T021, T022 em paralelo dentro da Fase 2
-- Todos os testes de uma mesma história em paralelo (T023 a T027; T035 a T042; T056 a T060)
+- Todos os testes de uma mesma história em paralelo (T023 a T027; T035 a T042; T059 a T063)
 - T043 e T044 em paralelo (migrações independentes)
-- T071 a T073 em paralelo; T080 a T083 em paralelo
+- T074 a T076 em paralelo; T083 a T086 em paralelo
 - Com equipe: US1, US2, US4 e US5 em paralelo depois da Fase 2. US3 espera US2
 
 ---
@@ -331,7 +334,7 @@ depois. Fazê-la depois de US1 a US3 produz evidência válida na primeira execu
 
 - Tarefas `[P]` são arquivos diferentes, sem dependência pendente
 - Nenhuma tarefa pode ser marcada concluída sem evidência — princípio V da constituição
-- **T074 é obrigatória e não pode ser dispensada**: SC-011 é o único critério que a
+- **T077 é obrigatória e não pode ser dispensada**: SC-011 é o único critério que a
   especificação e o plano não conseguiram provar; exige tentativa real de envio
 - Não reduzir nem remover teste para fazer os portões passarem
 - Commit por tarefa ou por grupo lógico coerente; mensagem no padrão

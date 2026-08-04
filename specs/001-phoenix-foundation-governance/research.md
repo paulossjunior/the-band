@@ -35,6 +35,12 @@ ambiente real.
 recentes. Verificação empírica: `mix deps.get` resolveu tudo e
 `mix compile --warnings-as-errors` gerou todas as aplicações sem falhar.
 
+**Achado sobre o gerador**: `mix phx.new .` em diretório **não vazio** pergunta
+`Are you sure you want to continue? [Yn]` e, sem entrada disponível, **aborta** com
+`** (Mix) Please select another directory for installation.` Verificado. A forma que
+funciona é `echo Y | mix phx.new . …`, também verificada: preserva `.git`, `README.md`,
+`CLAUDE.md` e `specs/`. O gerador 1.8.9 também cria `AGENTS.md`, que não estava previsto.
+
 **Achado relevante**: `oban 2.23.1` emite um alerta próprio ao compilar em Elixir 1.20:
 
 ```text
@@ -182,25 +188,73 @@ deve ser afrouxada nesta feature.
 
 ## R5 — Como provar que 100% dos acessos passam pela abstração de escopo (SC-002)
 
-**Decisão**: checagem customizada de Credo que reprova chamada direta a
-`TheBand.Repo.<função>` fora dos módulos autorizados, somada a teste que verifica a lista
-de módulos autorizados.
+**Decisão**: checagem customizada de Credo em **`credo_checks/`** na raiz, incluída em
+`elixirc_paths` apenas para `:dev` e `:test`, somada a uma guarda contra no-op silencioso.
 
 **Rationale**: SC-002 exige verificação automática, não revisão humana. Em Elixir não é
 possível tornar um módulo privado, então a restrição precisa ser imposta por análise
 estática. Credo já está na stack e permite checagem customizada, o que evita introduzir
 ferramenta nova — a constituição proíbe tecnologia nova quando a atual basta.
 
-Módulos autorizados a chamar `TheBand.Repo` diretamente: o próprio `TheBand.Tenancy`,
-as migrações, e as tarefas administrativas explicitamente marcadas. Qualquer outro
-módulo deve receber o escopo.
+Módulos autorizados a chamar `TheBand.Repo` diretamente: `TheBand.Tenancy`, `TheBand.Audit`,
+as migrações, e as tarefas administrativas explicitamente marcadas. Qualquer outro módulo
+deve receber o escopo.
+
+### Onde a checagem NÃO pode ficar — verificado por execução
+
+**`test/credo/checks/`**: não funciona. O projeto gerado tem
+`elixirc_paths(:test), do: ["lib", "test/support"]` e `elixirc_paths(_), do: ["lib"]`.
+`test/credo/` não é compilado em **nenhum** ambiente. Verificado: o módulo não carrega nem
+em `:dev` nem em `:test`.
+
+**`lib/`**: quebraria a compilação de produção. `use Credo.Check` exige a dependência
+`credo`, declarada `only: [:dev, :test]`. Um módulo em `lib/` que a use falha em
+`MIX_ENV=prod`.
+
+### A solução verificada
+
+```elixir
+defp elixirc_paths(:test), do: ["lib", "test/support", "credo_checks"]
+defp elixirc_paths(:dev),  do: ["lib", "credo_checks"]
+defp elixirc_paths(_),     do: ["lib"]
+```
+
+Resultados reais:
+
+| Verificação | Resultado |
+|---|---|
+| `mix credo --strict` com violação em `lib/` | detecta e sai com **código 16** |
+| `MIX_ENV=prod mix compile` | compila 14 arquivos em vez de 15; **nenhum** módulo de checagem no build de produção |
+
+### Achado grave: no-op silencioso
+
+**`mix credo` não compila o projeto antes de rodar.** Se o módulo da checagem não estiver
+compilado, o Credo apenas imprime um aviso e **sai com código 0**:
+
+```text
+** (config) Ignoring an undefined check: TheBand.Credo.Check.NoDirectRepoAccess
+Analysis took 0.01 seconds (0.00s running 0 checks on 15 files)
+exit=0
+```
+
+Ou seja: em `_build` limpo, ou se o nome do módulo for renomeado sem atualizar `.credo.exs`,
+**SC-002 deixa de ser verificado e nada falha**. Isso é pior que a ausência da checagem,
+porque o portão passa e parece cumprido.
+
+**Mitigação obrigatória, em duas camadas**:
+
+1. `mix compile` **antes** de `mix credo` na ordem dos portões — já é a ordem exigida;
+2. reprovar explicitamente quando o Credo emitir `Ignoring an undefined check`, e teste que
+   afirma que o módulo da checagem está carregável. Sem isso, a camada 1 protege apenas
+   quem não limpou o `_build`.
 
 **Alternativas descartadas**:
 
 - `mix xref` com verificação em script: funciona, mas produz saída difícil de acionar e
   não se integra ao gate de análise estática já existente.
 - Teste que faz busca textual no código: frágil a formatação e a apelidamento.
-- Confiar em revisão humana: viola SC-002, que exige verificação automática.
+- Confiar em revisão humana: viola SC-002, e sob a cláusula `Mantenedor único` não existe
+  revisão humana a que recorrer.
 
 ---
 
