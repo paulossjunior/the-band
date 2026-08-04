@@ -60,6 +60,14 @@ defmodule TheBand.Telemetry.Handler do
     #
     # `put_new_lazy/3`: se a correlação veio nos metadados, ela sobreviveu à redação e é
     # mantida; se não veio, busca no processo, e só nesse caso.
+    #
+    # A correlação aparece duas vezes na linha final quando o formatador do Logger também a
+    # inclui — uma vez do prefixo de metadados, uma vez daqui. A redundância é deliberada.
+    #
+    # `config/dev.exs` chegou a sobrescrever o formatador sem `$metadata`, e nesse estado a
+    # correlação desaparecia de toda linha de log em desenvolvimento. Foi encontrado rodando a
+    # aplicação, não pelos portões. A cópia daqui é o que garante que o evento carregue a
+    # correlação mesmo quando a configuração do formatador estiver errada — e ela já esteve.
     fields =
       metadata
       |> Map.merge(measurements)
