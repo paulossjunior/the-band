@@ -77,7 +77,10 @@ concluída sem evidência. Nenhuma inconsistência do `analyze` é ignorada.
 Proibido: reduzir ou remover testes para o pipeline passar; esconder erro com mock
 excessivo ou valor fixo; declarar aprovado sem rodar os quality gates.
 
-Quem implementa não é quem aprova. Revisão independente obrigatória.
+A verificação é independente de quem implementa. Enquanto houver mais de uma pessoa
+mantenedora, essa independência é humana: quem implementa não aprova. Com uma única
+pessoa mantenedora, a independência é mecânica e está definida na cláusula
+`Mantenedor único` da seção Development Workflow — nunca dispensada.
 
 ### VI. Simplicidade evolutiva
 
@@ -177,16 +180,64 @@ Necessidade → Discovery → Feature Request
 → /speckit-plan → revisão arquitetural → revisão semântica
 → /speckit-tasks → /speckit-taskstoissues → /speckit-analyze
 → branch → implementação → testes → quality gates → convergência
-→ Pull Request → revisão independente → merge
+→ Pull Request → verificação independente → merge
 ```
+
+A "verificação independente" é aprovação humana de outra pessoa quando houver mais de uma
+pessoa mantenedora, e verificação mecânica na cláusula `Mantenedor único` quando não
+houver. Nunca é ausência de verificação.
 
 Toda implementação está associada a uma GitHub Issue. Toda mudança ocorre em branch
 própria (`feature|fix|refactor|docs|test|chore/<issue>-<descricao>`) e é submetida por
-Pull Request. Nunca push direto na main. Nunca merge com teste falhando. Nunca aprovar
-o próprio PR.
+Pull Request. Nunca push direto na main. Nunca merge com teste falhando.
 
 Commits seguem `tipo(escopo): descrição imperativa` — ex.:
 `feat(sro): add user story knowledge definition`. Mensagem vaga é rejeitada.
+
+### Mantenedor único
+
+Enquanto o projeto tiver **uma única pessoa com permissão de escrita**, exigir aprovação
+humana de outra pessoa tornaria toda incorporação impossível, e adotar a exigência
+sabendo disso seria uma regra decorativa. Esta cláusula substitui a aprovação humana por
+verificação mecânica, mais estrita em tudo que pode ser automatizado.
+
+Vale enquanto, e somente enquanto, houver uma única pessoa com permissão de escrita.
+
+**Permanece obrigatório, sem exceção:**
+
+- toda mudança em branch própria e submetida por Pull Request;
+- escrita direta na linha principal bloqueada no servidor, sem ator de exceção,
+  inclusive para quem administra o repositório;
+- reescrita de histórico e remoção da linha principal bloqueadas;
+- **todos os quality gates registrados como verificações obrigatórias de status no
+  servidor**, não apenas executadas — incorporação impossível com qualquer verificação
+  reprovada, ausente ou pendente;
+- resolução obrigatória de todos os comentários abertos;
+- descarte de aprovações obsoletas a cada novo envio.
+
+**O que muda:** a contagem de aprovações humanas exigidas passa a zero. A pessoa
+mantenedora pode incorporar o próprio Pull Request **após** todas as verificações
+obrigatórias passarem, e apenas então.
+
+**Compensações obrigatórias**, porque nenhuma pessoa vai ler o diff de novo:
+
+- todo requisito verificável precisa de verificação automatizada; o que só uma pessoa
+  poderia conferir vira teste, checagem estática ou verificação de status;
+- o Pull Request declara requisito por requisito qual evidência o cobre;
+- achado do `analyze` classificado `CRITICAL` ou `HIGH` bloqueia a incorporação, e o
+  bloqueio é registrado no Pull Request;
+- revisão independente por outro agente antes da incorporação, com o resultado anexado
+  ao Pull Request. Não substitui revisão humana e não é tratada como equivalente — é
+  redução de risco, e essa limitação fica registrada.
+
+**Enquanto as verificações obrigatórias de status não existirem no servidor**, a proteção
+se reduz a "obrigatório passar por Pull Request". Este é um estado transitório conhecido,
+registrado como risco, e encerrado pela tarefa que registra os quality gates como
+verificações obrigatórias.
+
+**Reversão automática:** ao entrar a segunda pessoa com permissão de escrita, esta
+cláusula deixa de valer, a exigência de uma aprovação humana é restaurada, e a proibição
+de aprovar o próprio Pull Request volta a vigorar sem necessidade de nova emenda.
 
 Documentação, contratos, migrações, YAMLs e testes acompanham o código no mesmo PR.
 Decisões arquiteturais relevantes são registradas em ADR em `docs/adr/`.
@@ -213,6 +264,12 @@ mix knowledge.test       # a partir da feature 002
 
 Quando aplicável: `mix ecto.migrate`, `mix test --only integration`.
 
+**Todos os quality gates aplicáveis são registrados como verificações obrigatórias de
+status no servidor.** Executar localmente não substitui: a incorporação precisa ser
+impossível com verificação reprovada, ausente ou pendente. Sob a cláusula
+`Mantenedor único` este registro é o que sustenta a independência da verificação, e por
+isso não é opcional.
+
 PR só é aprovado quando: critérios de aceitação atendidos; testes passando; YAMLs
 validados; perguntas de competência verificadas; build aprovado; análise estática
 aprovada; migrações validadas; documentação atualizada; revisão semântica concluída;
@@ -235,4 +292,11 @@ bloquear qualquer feature por risco semântico.
 
 Guia operacional de desenvolvimento: `CLAUDE.md` na raiz do repositório.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-03 | **Last Amended**: 2026-08-03
+### Histórico de emendas
+
+| Versão | Data | Mudança |
+|---|---|---|
+| 1.0.0 | 2026-08-03 | Ratificação inicial |
+| 2.0.0 | 2026-08-03 | Cláusula `Mantenedor único`. Redefine a independência da verificação: humana com mais de uma pessoa mantenedora, mecânica com uma só. Torna explícito que os quality gates são verificações obrigatórias de status no servidor, não apenas execução local. Reversão automática ao entrar a segunda pessoa. **MAJOR** porque redefine de forma incompatível uma obrigação do princípio V |
+
+**Version**: 2.0.0 | **Ratified**: 2026-08-03 | **Last Amended**: 2026-08-03
