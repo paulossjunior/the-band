@@ -10,6 +10,7 @@ defmodule TheBand.ConfigTest do
   use ExUnit.Case, async: false
 
   alias TheBand.Config
+  alias TheBand.Config.InvalidEnvError
   alias TheBand.Config.MissingEnvError
 
   @var "THE_BAND_TEST_CONFIG_VAR"
@@ -92,10 +93,12 @@ defmodule TheBand.ConfigTest do
       assert Config.get_env_integer(@var, 4000) == 4000
     end
 
-    test "levanta quando o valor está presente mas não é inteiro" do
+    test "levanta InvalidEnvError, nao MissingEnvError, quando o valor e invalido" do
+      # A distincao importa para quem opera: "ausente" e "presente com valor errado" pedem
+      # correcoes diferentes.
       System.put_env(@var, "quatro-mil")
 
-      erro = assert_raise MissingEnvError, fn -> Config.get_env_integer(@var, 4000) end
+      erro = assert_raise InvalidEnvError, fn -> Config.get_env_integer(@var, 4000) end
 
       assert erro.message =~ @var
       assert erro.message =~ "inteiro"
@@ -106,7 +109,7 @@ defmodule TheBand.ConfigTest do
       # escutar numa porta que ninguém pediu.
       System.put_env(@var, "4000abc")
 
-      assert_raise MissingEnvError, fn -> Config.get_env_integer(@var, 4000) end
+      assert_raise InvalidEnvError, fn -> Config.get_env_integer(@var, 4000) end
     end
   end
 end

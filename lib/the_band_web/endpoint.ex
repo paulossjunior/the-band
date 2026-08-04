@@ -37,6 +37,18 @@ defmodule TheBandWeb.Endpoint do
   end
 
   plug Plug.RequestId
+
+  # FR-029 — correlação em TODA requisição.
+  #
+  # Fica no endpoint, e não num pipeline do roteador, porque pipeline só se aplica às rotas
+  # que o declaram: uma rota nova esquecida ficaria sem correlação, e é justamente na rota
+  # esquecida que o diagnóstico faz falta.
+  #
+  # Vem antes de `Plug.Telemetry` para que os eventos de requisição já encontrem a
+  # correlação nos metadados do Logger. Depois de `Plug.RequestId` porque o identificador de
+  # requisição do Plug é independente e ambos coexistem nos metadados.
+  plug TheBandWeb.Plugs.CorrelationId
+
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
   plug Plug.Parsers,

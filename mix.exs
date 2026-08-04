@@ -15,7 +15,12 @@ defmodule TheBand.MixProject do
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_add_apps: [:mix, :ex_unit],
-        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+        # O ambiente entra no nome do arquivo de propósito. Com um nome fixo, `mix dialyzer`
+        # em `:dev` e em `:test` sobrescrevem o mesmo PLT — verificado: o arquivo passou de
+        # 5.664.703 para 5.535.132 bytes ao alternar — e cada troca de ambiente força uma
+        # reconstrução completa de ~1m23s. Isso consumiria o orçamento de 10 minutos de
+        # SC-012 e tornaria o cache do fluxo de verificação inútil.
+        plt_file: {:no_warn, "priv/plts/dialyzer-#{Mix.env()}.plt"}
       ]
     ]
   end

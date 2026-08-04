@@ -16,6 +16,18 @@ defmodule TheBand.Config do
     defexception [:message]
   end
 
+  defmodule InvalidEnvError do
+    @moduledoc """
+    Levantada quando a variável está presente mas o valor não serve.
+
+    Separada de `MissingEnvError` de propósito: "ausente" e "presente com valor inválido"
+    exigem correções diferentes de quem opera, e um tipo de erro só para os dois casos
+    mentiria sobre o que aconteceu.
+    """
+
+    defexception [:message]
+  end
+
   @doc """
   Devolve o valor da variável de ambiente `name`.
 
@@ -81,7 +93,7 @@ defmodule TheBand.Config do
             int
 
           _ ->
-            raise MissingEnvError,
+            raise InvalidEnvError,
               message:
                 "variável de ambiente #{name} deve ser um número inteiro, " <>
                   "e recebeu um valor que não é. Corrija o valor no ambiente."
