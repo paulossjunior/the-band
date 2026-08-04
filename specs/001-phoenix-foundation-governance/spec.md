@@ -264,8 +264,9 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
   provisionado pelo próprio processo de verificação.
 - **FR-027**: A incorporação na linha principal MUST exigir aprovação de pessoa diferente
   de quem propôs a mudança.
-- **FR-028**: A linha principal MUST ser protegida contra escrita direta, reescrita de
-  histórico e remoção.
+- **FR-028**: A linha principal MUST ser protegida no servidor contra escrita direta,
+  reescrita de histórico e remoção, sem ator de exceção — inclusive para quem administra
+  o repositório.
 - **FR-029**: O repositório MUST conter modelo de proposta de mudança exigindo escopo,
   fora de escopo, testes, resultado das verificações e evidências.
 - **FR-030**: O repositório MUST conter modelos de solicitação para pedido de
@@ -332,7 +333,9 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
 - **SC-008**: O conjunto completo de verificações automáticas conclui em **até 10
   minutos** desde a abertura da proposta de mudança.
 - **SC-009**: **Zero** credencial, token, chave ou arquivo de ambiente real versionado,
-  verificado por checagem automática de segurança em todo o histórico da mudança.
+  verificado por checagem automática de segurança em todo o histórico da mudança. Como o
+  repositório é público, qualquer ocorrência conta como incidente, não como achado a
+  corrigir depois.
 - **SC-010**: Uma pessoa externa ao projeto localiza e resume as duas decisões
   estruturais e suas alternativas descartadas em **até 10 minutos**, usando somente o
   repositório.
@@ -373,41 +376,66 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
   registrada, então a branch usa o número da feature no lugar do número da solicitação.
   As branches de implementação usarão o número da solicitação, conforme a constituição.
 
+- **Visibilidade**: o repositório é **público** desde 2026-08-03 (decisão Q1). Todo
+  artefato desta feature — código, especificação, mensagem de commit, exemplo e
+  documentação — é escrito assumindo leitura externa.
+
 ## Dependencies
 
 - Ambiente de bootstrap já concluído: ferramenta de especificação inicializada,
   constituição ratificada, repositório publicado, linguagem, plataforma de execução e
   armazenamento de dados verificados localmente.
 - Acesso administrativo ao repositório remoto para configurar proteção da linha principal
-  e responsáveis por revisão.
+  e responsáveis por revisão. **Satisfeita**: conjunto de regras `protect-main` ativo.
 - Nenhuma dependência de sistema externo, fornecedor ou credencial de terceiro.
 
-## Clarifications Needed
+## Clarifications
 
-Duas decisões não têm padrão razoável e afetam critérios de aceitação desta feature.
-
-### Q1: Proteção da linha principal em repositório privado
+### Q1: Proteção da linha principal — RESOLVIDA (2026-08-03)
 
 **Context**: FR-027, FR-028, SC-007. A constituição proíbe escrita direta na linha
 principal, proíbe incorporação sem revisão e proíbe aprovar a própria mudança.
 
-**What we need to know**: O repositório foi criado privado. No plano atual da conta, a
-plataforma de hospedagem recusa configurar proteção de linha principal e conjuntos de
-regras em repositório privado — a tentativa retorna erro exigindo plano pago ou
-repositório público. Como satisfazer FR-027 e FR-028?
+**Question**: O repositório foi criado privado. No plano da conta, a plataforma de
+hospedagem recusa configurar proteção de linha principal e conjuntos de regras em
+repositório privado (`403 Upgrade to GitHub Pro or make this repository public`). Como
+satisfazer FR-027 e FR-028?
 
-**Suggested Answers**:
+**Decision**: **Opção A — repositório público.** Aplicada em 2026-08-03.
 
-| Option | Answer | Implications |
-|--------|--------|--------------|
-| A | Tornar o repositório público | Proteção e conjuntos de regras liberados sem custo; FR-027, FR-028 e SC-007 plenamente atendidos. Código, histórico e especificações passam a ser visíveis e indexáveis publicamente, de forma difícil de reverter na prática. |
-| B | Assinar plano pago da hospedagem | Repositório segue privado e proteção plena é ativada. Introduz custo recorrente e dependência de plano. |
-| C | Manter privado sem proteção no servidor, compensando com verificação automática obrigatória e disciplina de processo | Sem custo e sem exposição. FR-028 fica tecnicamente insatisfeito: nada impede escrita direta na linha principal além de convenção. Deve ser registrado como risco residual aceito e reavaliado. |
-| Custom | Outra combinação | Ex.: manter privado agora e tornar público apenas quando houver conteúdo publicável; ou usar espelho protegido. Descrever o arranjo desejado. |
+**Rationale**: libera proteção de linha principal e conjuntos de regras sem custo
+recorrente e sem dependência de plano pago, satisfazendo FR-027, FR-028 e SC-007 por
+mecanismo do servidor em vez de convenção de processo. Alternativas descartadas: plano
+pago (custo recorrente para benefício idêntico) e manter privado sem proteção (deixaria
+FR-028 tecnicamente insatisfeito, com risco residual permanente).
 
-**Your choice**: _aguardando resposta_
+**Consequências assumidas**:
 
-### Q2: Licença do código
+- Código, histórico completo de commits, especificações e constituição passam a ser
+  publicamente visíveis e indexáveis. Reverter a visibilidade não desfaz cópias e
+  indexações já realizadas.
+- O repositório passa a ser artefato público desde o primeiro commit. Todo conteúdo
+  futuro — incluindo mensagens de commit, especificações e exemplos — deve ser escrito
+  assumindo leitura externa.
+- A proibição de versionar credencial deixa de ser boa prática e passa a ser exposição
+  imediata. A checagem de segredos de FR-025 torna-se crítica, não preventiva.
+
+**Evidência de aplicação**:
+
+- Varredura de padrões de credencial em todo o histórico antes da mudança de
+  visibilidade: 33 arquivos inspecionados, zero ocorrências.
+- Visibilidade confirmada como pública.
+- Conjunto de regras `protect-main` criado e ativo sobre a linha principal, sem atores de
+  exceção, contendo: bloqueio de remoção, bloqueio de reescrita de histórico e exigência
+  de proposta de mudança com uma aprovação, descarte de aprovação obsoleta após novo
+  envio, aprovação obrigatória do último envio e resolução obrigatória de comentários.
+- Regras confirmadas como vigentes sobre a linha principal por consulta ao servidor.
+
+**Verificação pendente**: SC-007 exige provar empiricamente que envio direto à linha
+principal é rejeitado. A tentativa de envio direto deve ser executada e registrada como
+evidência durante a implementação desta feature, não apenas declarada pela configuração.
+
+### Q2: Licença do código — ABERTA
 
 **Context**: FR-032, US5 cenário 4. A licença está no escopo desta feature, mas o
 conteúdo não foi definido e não há padrão razoável — a escolha é jurídica e estratégica,

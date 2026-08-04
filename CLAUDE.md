@@ -20,8 +20,19 @@ ferramentas, nem chatbot ligado ao banco.
 
 **Fase 0 concluída (bootstrap).** Ainda NÃO existe aplicação Phoenix.
 
+> **Repositório é PÚBLICO.** Histórico, especificações e mensagens de commit são
+> visíveis e indexáveis por qualquer pessoa. Nunca versione credencial, token, chave ou
+> `.env` real — aqui isso é vazamento imediato, não achado a corrigir depois. Escreva
+> todo artefato assumindo leitura externa.
+>
+> **A linha principal é protegida no servidor** pelo conjunto de regras `protect-main`,
+> sem atores de exceção: sem escrita direta, sem reescrita de histórico, sem remoção;
+> exige Pull Request com 1 aprovação, descarte de aprovação obsoleta, aprovação do
+> último envio e resolução de comentários. Sempre trabalhe em branch e abra PR.
+
 | Item | Estado |
 |---|---|
+| Repositório | público, `main` protegida por `protect-main` |
 | Spec Kit (`.specify/`, `.claude/skills/`) | instalado, integração `claude` |
 | `constitution.md` | v1.0.0 ratificada |
 | Elixir / Erlang OTP | 1.20.2 / OTP 29 (via Homebrew) |

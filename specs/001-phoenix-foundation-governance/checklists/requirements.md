@@ -33,21 +33,24 @@
 
 ## Notes
 
-Validação executada em 2026-08-03, iteração 1.
+Iteração 1 em 2026-08-03. Iteração 2 em 2026-08-03, após resolução de Q1.
 
-**Dois itens reprovados, ambos pela mesma causa — duas decisões abertas registradas na
-seção `Clarifications Needed` do `spec.md`:**
+**Uma decisão aberta, registrada na seção `Clarifications` do `spec.md`:**
 
-1. **Q1 — proteção da linha principal em repositório privado.** Bloqueia FR-027, FR-028
-   e SC-007. A hospedagem recusou configurar proteção e conjuntos de regras em
-   repositório privado no plano atual da conta (erro `403 Upgrade to GitHub Pro or make
-   this repository public`). Sem decisão, FR-028 não tem caminho de implementação e
-   SC-007 não é verificável.
-2. **Q2 — licença do código.** Bloqueia FR-032 e o cenário 4 da User Story 5. Escolha
-   jurídica sem padrão razoável.
+- **Q2 — licença do código.** Bloqueia FR-032 e o cenário 4 da User Story 5. Escolha
+  jurídica sem padrão razoável. Agravada pela resolução de Q1: com repositório público,
+  ausência de licença significa que terceiros não recebem nenhuma permissão de uso, o que
+  provavelmente não é a intenção de publicar.
 
-Consequência: `Feature meets measurable outcomes` fica reprovado porque SC-007 não é
-verificável enquanto Q1 estiver aberta.
+**Q1 — proteção da linha principal: RESOLVIDA.** Decisão: repositório público. Proteção
+da linha principal aplicada e confirmada no servidor, sem atores de exceção. FR-027 e
+FR-028 passam a ter caminho de implementação; SC-007 passa a ser verificável.
+
+Consequência para o item `Feature meets measurable outcomes`: segue reprovado, agora por
+uma causa só — SC-007 depende de evidência empírica ainda não produzida. Provar que envio
+direto à linha principal é rejeitado exige tentativa real de envio, que é atividade de
+implementação desta feature, não de especificação. A configuração está confirmada; o
+comportamento ainda não foi observado.
 
 **Ajustes já aplicados durante a validação:**
 
@@ -64,8 +67,8 @@ verificável enquanto Q1 estiver aberta.
   especificação (número da feature no lugar do número da solicitação, que ainda não
   existe).
 
-**Bloqueio de avanço**: `/speckit-plan` não deve ser executado antes de Q1 e Q2 serem
-respondidas. Q1 altera a definição de pronto da feature; Q2 adiciona artefato obrigatório.
+**Bloqueio de avanço**: `/speckit-plan` não deve ser executado antes de Q2 ser
+respondida — define o conteúdo de um artefato obrigatório da feature (FR-032).
 
 Itens marcados incompletos exigem atualização da especificação antes de `/speckit-clarify`
 ou `/speckit-plan`.
