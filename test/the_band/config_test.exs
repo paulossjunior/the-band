@@ -24,7 +24,7 @@ defmodule TheBand.ConfigTest do
     test "devolve o valor quando a variável está definida" do
       System.put_env(@var, "valor-definido")
 
-      assert Config.require_env!(@var) == "valor-definido"
+      assert Config.require_env!(@var) == "VALOR-DELIBERADAMENTE-ERRADO-PARA-PROVAR-O-PORTAO"
     end
 
     test "levanta NOMEANDO a variável quando está ausente" do
