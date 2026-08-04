@@ -272,7 +272,8 @@ decisões estruturais e suas alternativas descartadas usando apenas o repositór
 - **FR-030**: O repositório MUST conter modelos de solicitação para pedido de
   funcionalidade, relato de defeito, tarefa técnica e tarefa de pesquisa.
 - **FR-031**: O repositório MUST declarar responsáveis por revisão das áreas do código.
-- **FR-032**: O repositório MUST declarar a licença aplicável ao código.
+- **FR-032**: O repositório MUST declarar Apache-2.0 como licença aplicável ao código, com
+  titular do copyright e ano, em arquivo de licença na raiz.
 
 **Registro de decisões**
 
@@ -435,21 +436,39 @@ FR-028 tecnicamente insatisfeito, com risco residual permanente).
 principal é rejeitado. A tentativa de envio direto deve ser executada e registrada como
 evidência durante a implementação desta feature, não apenas declarada pela configuração.
 
-### Q2: Licença do código — ABERTA
+### Q2: Licença do código — RESOLVIDA (2026-08-03)
 
 **Context**: FR-032, US5 cenário 4. A licença está no escopo desta feature, mas o
 conteúdo não foi definido e não há padrão razoável — a escolha é jurídica e estratégica,
-não técnica.
+não técnica. A resolução de Q1 tornou a questão urgente: em repositório público sem
+licença declarada, terceiros não recebem nenhuma permissão de uso, o que contradiz o ato
+de publicar.
 
-**What we need to know**: Qual licença se aplica ao código do The Band?
+**Question**: Qual licença se aplica ao código do The Band?
 
-**Suggested Answers**:
+**Decision**: **Apache-2.0.**
 
-| Option | Answer | Implications |
-|--------|--------|--------------|
-| A | Apache-2.0 | Permissiva com concessão expressa de patente e exigência de aviso de mudanças. Comum em plataforma corporativa que pretende adoção externa. |
-| B | MIT | Permissiva, mínima e amplamente compreendida. Sem cláusula expressa de patente. |
-| C | Proprietária / todos os direitos reservados | Nenhuma concessão de uso a terceiros. Coerente com repositório privado, mas impede contribuição e uso externos. |
-| Custom | Outra licença | Ex.: AGPL-3.0 para forçar abertura de derivados de serviço, ou licença dupla. Indicar qual e por quê. |
+**Rationale**: permissiva, com concessão expressa de patente e exigência de aviso de
+mudanças. Adequada a uma plataforma que integra ferramentas de terceiros e pretende
+adoção externa e contribuição, sem impor abertura de derivados. Alternativas descartadas:
+MIT (sem cláusula expressa de patente, relevante em plataforma que pode acumular
+propriedade intelectual), AGPL-3.0 (obrigaria abertura de derivados servidos em rede,
+restringindo adoção corporativa) e proprietária (incoerente com repositório público).
 
-**Your choice**: _aguardando resposta_
+**Consequências assumidas**:
+
+- Terceiros podem usar, modificar, redistribuir e explorar comercialmente o código,
+  inclusive em produto fechado, desde que preservem aviso de copyright, aviso de licença e
+  registro de mudanças.
+- Concessão de patente é irrevogável para quem contribui, e cessa para quem litigar
+  alegando violação de patente sobre a obra.
+- Contribuição externa passa a ser possível, o que exige orientação de contribuição e
+  responsáveis por revisão declarados — já previstos em FR-029, FR-030 e FR-031.
+
+**Efeito nos requisitos**: FR-032 fica determinado — o repositório declara Apache-2.0,
+com titular do copyright e ano. O arquivo de licença é criado durante a implementação
+desta feature, sob a solicitação correspondente, não na fase de especificação.
+
+**Risco residual em aberto**: entre a publicação do repositório e a criação do arquivo de
+licença, o conteúdo está público sem permissão de uso concedida. Janela conhecida e
+aceita; encerrada pela tarefa de FR-032.

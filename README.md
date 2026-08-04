@@ -48,4 +48,6 @@ Instruções de execução serão adicionadas pela feature 001.
 
 ## Licença
 
-A definir na feature 001.
+**Apache-2.0** (decisão registrada em
+[specs/001-phoenix-foundation-governance/spec.md](specs/001-phoenix-foundation-governance/spec.md)).
+O arquivo `LICENSE` é adicionado pela implementação da feature 001.
