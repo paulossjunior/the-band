@@ -70,7 +70,20 @@ config :the_band, TheBandWeb.Endpoint,
 config :the_band, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :default_formatter, format: "[$level] $message\n"
+# O gerador escreve aqui `format: "[$level] $message\n"`, sem `$metadata`, para manter a saída
+# de desenvolvimento curta. O efeito colateral é que a correlação nunca aparece nas linhas de
+# log em desenvolvimento — e correlação existe para diagnosticar, sendo desenvolvimento onde
+# mais se diagnostica.
+#
+# Encontrado rodando a aplicação, não pelos portões: o cabeçalho de resposta continha a
+# correlação e `TheBand.Telemetry.Handler` a imprimia, mas as linhas de requisição do Phoenix
+# a descartavam na formatação.
+#
+# `$time` fica de fora aqui de propósito: em desenvolvimento o horário é ruído, e a correlação
+# não.
+config :logger, :default_formatter,
+  format: "[$level] $metadata$message\n",
+  metadata: [:request_id, :correlation_id, :tenant_id]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
