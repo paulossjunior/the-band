@@ -18,7 +18,8 @@ ferramentas, nem chatbot ligado ao banco.
 
 ## Estado atual do repositório
 
-**Fase 0 concluída (bootstrap).** Ainda NÃO existe aplicação Phoenix.
+**Feature 001 entregue.** A aplicação Phoenix existe, sobe, e tem isolamento por Tenant
+imposto por análise estática.
 
 > **Repositório é PÚBLICO.** Histórico, especificações e mensagens de commit são
 > visíveis e indexáveis por qualquer pessoa. Nunca versione credencial, token, chave ou
@@ -26,22 +27,44 @@ ferramentas, nem chatbot ligado ao banco.
 > todo artefato assumindo leitura externa.
 >
 > **A linha principal é protegida no servidor** pelo conjunto de regras `protect-main`,
-> sem atores de exceção: sem escrita direta, sem reescrita de histórico, sem remoção;
-> exige Pull Request com 1 aprovação, descarte de aprovação obsoleta, aprovação do
-> último envio e resolução de comentários. Sempre trabalhe em branch e abra PR.
+> sem atores de exceção — nem para quem administra. Sem escrita direta, sem reescrita de
+> histórico, sem remoção. Exige Pull Request com resolução de comentários e **três
+> verificações obrigatórias de status**. Aprovações humanas exigidas: **zero**, pela
+> cláusula `Mantenedor único` — ver abaixo. Sempre trabalhe em branch e abra PR.
 
 | Item | Estado |
 |---|---|
-| Repositório | público, `main` protegida por `protect-main` |
-| Spec Kit (`.specify/`, `.claude/skills/`) | instalado, integração `claude` |
-| `constitution.md` | v1.0.0 ratificada |
-| Elixir / Erlang OTP | 1.20.2 / OTP 29 (via Homebrew) |
-| Docker | 29.4.x, daemon ativo |
-| Aplicação Phoenix, Ecto, Oban, Req | **ausentes** — feature 001 |
+| Repositório | público, `main` protegida por `protect-main`, sem ator de exceção |
+| `constitution.md` | **v2.0.0** — cláusula `Mantenedor único` |
+| Elixir / Erlang OTP | 1.20.2 / OTP 29.0.4 |
+| Aplicação Phoenix + LiveView | **existe** — 1.8.9 / 1.2.8 |
+| Ecto / PostgreSQL | **existe** — 3.14.0 / 17.10 |
+| Oban | **existe** — 2.23.1, migração v14, 1 trabalhador de referência |
+| Req | dependência presente, **nenhum conector** — feature 025 |
+| Isolamento por Tenant | **existe** — escopo que levanta; RLS descartada, ver ADR-0002 |
+| Verificação automática | `ci.yml` + `security.yml`, 3 status checks obrigatórios |
+| Registros de decisão | ADR-0001, 0002, 0003 em `docs/adr/` |
 | `priv/knowledge_base/` | **ausente** — feature 002 |
 | Módulos ontológicos | **ausentes** — features 003+ |
 
-Próxima feature: **001 — Fundação Phoenix e governança**.
+Tabelas existentes: `tenants`, `operational_events`, e as do Oban. Nenhuma com prefixo de
+ontologia — há teste que falha se aparecer.
+
+Próxima feature: **002 — Infraestrutura da base de conhecimento YAML**.
+
+### O que subir e verificar
+
+```bash
+cp .env.example .env && docker compose up -d
+mix deps.get && mix ecto.setup && mix phx.server
+
+curl -s http://localhost:4000/health          # {"status":"alive"}
+mix gates                                     # os cinco portões, na ordem correta
+mix test --only integration                   # obrigatórios no CI
+```
+
+`mix gates` respeita a ordem exigida: `mix credo` **não** compila o projeto antes de rodar, e
+sem a compilação as checagens próprias não carregam e o Credo sai com código 0.
 
 ## Arquitetura
 
@@ -232,8 +255,23 @@ constituição substituiu a aprovação humana por **verificação mecânica**:
 - **Reversão automática**: ao entrar a 2ª pessoa com permissão de escrita, a exigência de
   aprovação humana volta sem nova emenda.
 
-**Risco aberto**: enquanto os status checks obrigatórios não existirem (tarefa T075 da
-feature 001), a proteção se reduz a "obrigatório passar por PR".
+**Risco encerrado.** O estado transitório declarado na emenda — "enquanto as verificações
+obrigatórias não existirem, a proteção se reduz a exigir PR" — acabou. As três verificações
+estão registradas no servidor: `Quality gates`, `Credenciais versionadas`,
+`Dependências vulneráveis`.
+
+Provado por execução, não por leitura de configuração:
+
+```text
+$ git push origin main
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: - Changes must be made through a pull request.
+remote: - 3 of 3 required status checks are expected.
+ ! [remote rejected] main -> main
+```
+
+Rejeitado para quem **administra** o repositório. E com verificação obrigatória reprovada, a
+incorporação fica `BLOCKED` mesmo com as outras duas aprovadas — exige-se que **todas** passem.
 
 ## Quality gates
 
