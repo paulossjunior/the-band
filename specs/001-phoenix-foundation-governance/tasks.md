@@ -162,19 +162,19 @@ na própria especificação da US3.
 
 ### Tests for User Story 3
 
-- [ ] T059 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` cobrindo os quatro casos verificados em R6, com `state` e `attempt` esperados: ativo → `completed`/1; sem `tenant_id` → `cancelled`/1; inativo → `cancelled`/1; inexistente → `cancelled`/1 — FR-022, FR-023, FR-024, SC-005, SC-006
-- [ ] T060 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que o motivo fica persistido em `errors` e é consultável — FR-027
-- [ ] T061 [P] [US3] Teste de integração em `test/integration/idempotency_test.exs` executando o mesmo trabalho 10 vezes com a mesma entrada e afirmando estado final idêntico ao de uma única execução — FR-026, SC-007
-- [ ] T062 [P] [US3] Teste em `test/integration/idempotency_test.exs` verificando que a segunda inserção com os mesmos argumentos devolve a mesma id com conflito marcado, em vez de criar segundo trabalho — FR-026, R7
-- [ ] T063 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que todo evento de telemetria do trabalho carrega Tenant, correlação, identificador do trabalho e tentativa — FR-028, SC-016
+- [x] T059 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` cobrindo os quatro casos verificados em R6, com `state` e `attempt` esperados: ativo → `completed`/1; sem `tenant_id` → `cancelled`/1; inativo → `cancelled`/1; inexistente → `cancelled`/1 — FR-022, FR-023, FR-024, SC-005, SC-006
+- [x] T060 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que o motivo fica persistido em `errors` e é consultável — FR-027
+- [x] T061 [P] [US3] Teste de integração em `test/integration/idempotency_test.exs` executando o mesmo trabalho 10 vezes com a mesma entrada e afirmando estado final idêntico ao de uma única execução — FR-026, SC-007
+- [x] T062 [P] [US3] Teste em `test/integration/idempotency_test.exs` verificando que a segunda inserção com os mesmos argumentos devolve a mesma id com conflito marcado, em vez de criar segundo trabalho — FR-026, R7
+- [x] T063 [P] [US3] Teste em `test/the_band/jobs/tenant_health_check_test.exs` afirmando que todo evento de telemetria do trabalho carrega Tenant, correlação, identificador do trabalho e tentativa — FR-028, SC-016
 
 ### Implementation for User Story 3
 
-- [ ] T064 [US3] Implementar `TheBand.Jobs.TenantHealthCheck` em `lib/the_band/jobs/tenant_health_check.ex` seguindo a ordem de validação obrigatória de [contracts/worker.md](contracts/worker.md) e retornando `{:cancel, motivo}` — **nunca** `{:error, motivo}` — para Tenant ausente, inexistente ou inativo, porque `{:error, ...}` retentaria e violaria FR-024 (R6)
-- [ ] T065 [US3] Em `lib/the_band/jobs/tenant_health_check.ex`, registrar a execução via `TheBand.Audit.record_event/2` usando o escopo validado — FR-018, FR-021
-- [ ] T066 [US3] Anexar os manipuladores de telemetria de `[:the_band, :job, :start | :stop | :exception]` em `lib/the_band/telemetry/handler.ex`, com duração, tentativa, situação e código de erro — FR-028
-- [ ] T067 [US3] Definir a política de novas tentativas com espera crescente e limite máximo em `lib/the_band/jobs/tenant_health_check.ex` (`max_attempts` e `backoff/1`) — FR-025
-- [ ] T068 [US3] Executar o bloco 5 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo `attempt = 1` em todos os cancelados — SC-005 a SC-007, SC-016
+- [x] T064 [US3] Implementar `TheBand.Jobs.TenantHealthCheck` em `lib/the_band/jobs/tenant_health_check.ex` seguindo a ordem de validação obrigatória de [contracts/worker.md](contracts/worker.md) e retornando `{:cancel, motivo}` — **nunca** `{:error, motivo}` — para Tenant ausente, inexistente ou inativo, porque `{:error, ...}` retentaria e violaria FR-024 (R6)
+- [x] T065 [US3] Em `lib/the_band/jobs/tenant_health_check.ex`, registrar a execução via `TheBand.Audit.record_event/2` usando o escopo validado — FR-018, FR-021
+- [x] T066 [US3] Anexar os manipuladores de telemetria de `[:the_band, :job, :start | :stop | :exception]` em `lib/the_band/telemetry/handler.ex`, com duração, tentativa, situação e código de erro — FR-028
+- [x] T067 [US3] Definir a política de novas tentativas com espera crescente e limite máximo em `lib/the_band/jobs/tenant_health_check.ex` (`max_attempts` e `backoff/1`) — FR-025
+- [x] T068 [US3] Executar o bloco 5 de [quickstart.md](quickstart.md) e registrar a evidência, incluindo `attempt = 1` em todos os cancelados — SC-005 a SC-007, SC-016
 
 **Checkpoint**: trabalho assíncrono rejeita, não retenta o que não deve, e é idempotente.
 
