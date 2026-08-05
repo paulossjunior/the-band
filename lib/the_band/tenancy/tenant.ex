@@ -7,7 +7,7 @@ defmodule TheBand.Tenancy.Tenant do
   própria. Um Tenant contém várias organizações — uma consultoria que analisa doze clientes é
   um Tenant e doze organizações. Fundir os dois destruiria a capacidade de comparar
   organizações dentro do mesmo contratante, que é uma das perguntas centrais do produto.
-  Ver ADR-0003 (chega na issue #7).
+  Ver ADR-0003.
   """
 
   use TheBand.Schema

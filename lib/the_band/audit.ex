@@ -22,7 +22,7 @@ defmodule TheBand.Audit do
 
   Registro de operação **desta plataforma**, não atividade de processo de software de projeto
   observado. Quando a ontologia SPO chegar (feature 006), os dois conceitos coexistem sem se
-  confundir. Ver ADR-0003 (chega na issue #7).
+  confundir. Ver ADR-0003.
   """
 
   alias TheBand.Audit.Commands

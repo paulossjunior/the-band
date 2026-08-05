@@ -15,7 +15,7 @@ defmodule TheBand.Credo.Check.NoDirectRepoAccess do
 
   RLS do PostgreSQL barraria no banco, o que seria mais forte. Foi testada e descartada nesta
   feature: sem o contexto definido, devolve **zero linhas silenciosamente** em vez de rejeitar,
-  transformando perda de contexto em "nenhum dado encontrado". Ver ADR-0002 (chega na issue #7).
+  transformando perda de contexto em "nenhum dado encontrado". Ver ADR-0002.
 
   Sem RLS, nada no banco barra um acesso que ignore a abstração. Esta checagem é o que ocupa
   esse lugar.
