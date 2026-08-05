@@ -9,8 +9,16 @@ tomada de decisão.
 
 ## Estado
 
-**Bootstrap.** Spec Kit inicializado e constituição ratificada. A aplicação Phoenix
-ainda não existe — será entregue pela feature `001 — Fundação Phoenix e governança`.
+**Fundação entregue** (feature 001). A aplicação sobe, tem verificação de saúde em dois
+níveis, isolamento por Tenant imposto por análise estática, trabalho assíncrono com
+cancelamento definitivo, e verificação automática obrigatória no servidor.
+
+**Nenhuma ontologia foi implementada ainda.** A base de conhecimento declarativa é a feature
+002, a infraestrutura comum de ontologias é a 003, e as ontologias em si vêm da 004 em diante.
+Nenhum conector externo existe — a coleta começa na feature 024.
+
+Ver [`docs/architecture/overview.md`](docs/architecture/overview.md) para o que existe e o que
+não existe, com a feature de cada ausência.
 
 ## Perguntas que o sistema deve responder
 
@@ -35,10 +43,24 @@ Arquitetura: monólito modular multitenant, organizado pelas ontologias.
 
 ## Documentação
 
-- [Constituição do projeto](.specify/memory/constitution.md) — normas obrigatórias
+- [Constituição do projeto](.specify/memory/constitution.md) — normas obrigatórias; em
+  conflito com qualquer outra prática, ela prevalece
 - [CLAUDE.md](CLAUDE.md) — guia operacional, arquitetura e roadmap
-- `specs/` — especificações por feature (Spec Kit)
-- `docs/` — arquitetura, ontologias, integrações, medidas e ADRs
+- [Visão de arquitetura](docs/architecture/overview.md) — fluxo, módulos, e o que **não**
+  existe ainda
+
+### Decisões estruturais e o que foi descartado
+
+Estes registros contêm as alternativas **testadas e rejeitadas**, com a medição. Quem se
+perguntar "por que não fizeram X?" acha a resposta aqui, em vez de repetir o experimento.
+
+| Registro | Decide |
+|---|---|
+| [ADR-0001](docs/adr/0001-monolito-modular-multitenant.md) | Sistema único modular em vez de vários serviços |
+| [ADR-0002](docs/adr/0002-estrategia-de-isolamento-por-tenant.md) | Como o isolamento entre clientes é imposto, e por que Row Level Security foi descartada |
+| [ADR-0003](docs/adr/0003-tenant-nao-e-organizacao.md) | Por que Tenant e Organização são entidades diferentes |
+
+`specs/` guarda a especificação, o plano, a pesquisa e os contratos de cada feature.
 
 ## Desenvolvimento
 

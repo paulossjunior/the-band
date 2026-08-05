@@ -224,7 +224,7 @@ alternativas descartadas usando só o repositório.
 - [x] T085 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
 - [x] T086 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
 - [x] T087 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
-- [ ] T088 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
+- [ ] T088 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado. **PENDENTE, e deliberadamente não marcada.** Não pode ser executada por quem escreveu os registros de decisão: ler o próprio texto e confirmar que se entende prova zero, e o critério existe para pegar o que o autor não vê. Duas tentativas com agente sem contexto como substituto falharam por infraestrutura — erro de API e travamento — sem entregar achado. Ver [evidence.md](evidence.md), SC-014
 
 **Checkpoint**: decisões estruturais recuperáveis sem perguntar a ninguém.
 
@@ -232,13 +232,13 @@ alternativas descartadas usando só o repositório.
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T089 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
-- [ ] T090 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
-- [ ] T091 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
-- [ ] T092 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
-- [ ] T093 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos 16 critérios com a evidência de cada um
-- [ ] T094 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
-- [ ] T095 Abrir o Pull Request usando o modelo de T074, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
+- [x] T089 [P] Atualizar `CLAUDE.md` com o estado real após a entrega: aplicação Phoenix existente, módulos disponíveis, comandos de execução
+- [x] T090 [P] Atualizar `README.md` com a licença Apache-2.0 declarada e remover a nota de que ela viria depois
+- [x] T091 Verificar que `lib/the_band/ontology/` e `priv/knowledge_base/` **não** existem nesta entrega — a constituição proíbe criar pasta antes de a feature justificar; pertencem às features 002 e 003
+- [x] T092 Rodar o bloco 8 de [quickstart.md](quickstart.md): varredura de credencial em todo o histórico e conferência de `.env.example` — SC-013
+- [x] T093 Executar [quickstart.md](quickstart.md) do início ao fim e preencher a matriz de cobertura dos critérios com a evidência de cada um — registrada em [evidence.md](evidence.md): **16 de 17 provados**, SC-014 pendente por depender de pessoa externa (T088)
+- [x] T094 Rodar os cinco portões mais `mix ecto.migrate` e `mix test --only integration` e anexar as saídas ao PR — FR-031, FR-032
+- [x] T095 Abrir o Pull Request usando o modelo de T074, com mapeamento de requisito para evidência, e solicitar revisão independente. **Não aprovar o próprio PR** — restrição da constituição
 
 ---
 
