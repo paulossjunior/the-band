@@ -219,11 +219,11 @@ alternativas descartadas usando só o repositório.
 
 ### Implementation for User Story 5
 
-- [ ] T083 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
-- [ ] T084 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
-- [ ] T085 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
-- [ ] T086 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
-- [ ] T087 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
+- [x] T083 [P] [US5] Criar `docs/adr/0001-monolito-modular-multitenant.md` com contexto, alternativas consideradas (microserviços, backend adicional), decisão, consequências e data — FR-041
+- [x] T084 [P] [US5] Criar `docs/adr/0002-estrategia-de-isolamento-por-tenant.md` registrando base única com tabelas compartilhadas e `tenant_id`, a rejeição explícita de banco por Tenant, **e** a evidência de R2: Row Level Security devolve conjunto vazio silenciosamente quando o contexto está ausente, não satisfazendo FR-014, além de exigir papel não-dono e transação em toda leitura. Registrar RLS como feature futura com a evidência já levantada — FR-042
+- [x] T085 [P] [US5] Criar `docs/adr/0003-tenant-nao-e-organizacao.md` explicitando que Tenant é fronteira de instalação e `eo.organization` é objeto social do domínio, que um Tenant contém várias organizações, e que fundi-los destruiria a capacidade de comparar organizações dentro do mesmo contratante — FR-043
+- [x] T086 [P] [US5] Criar `docs/architecture/overview.md` com o fluxo da plataforma, os módulos e a fronteira entre infraestrutura (`tenancy`, `audit`) e o futuro domínio ontológico
+- [x] T087 [US5] Verificar que os três arquivos de `docs/adr/` usam formato e numeração consistentes (mesmo cabeçalho, mesma ordem de seções, numeração `NNNN-`), permitindo referência estável — FR-044
 - [ ] T088 [US5] Executar o teste de SC-014 do bloco 9 de [quickstart.md](quickstart.md) com uma pessoa externa ao projeto e registrar o resultado
 
 **Checkpoint**: decisões estruturais recuperáveis sem perguntar a ninguém.

@@ -12,7 +12,7 @@ defmodule TheBand.Tenancy.Scope do
 
   Um defeito que perdesse o contexto produziria "nenhum dado encontrado" em vez de falha
   visível — pior que a ausência de proteção, porque parece funcionamento normal. FR-014 exige
-  rejeitar. Ver ADR-0002 (chega na issue #7) e `research.md` R2.
+  rejeitar. Ver ADR-0002 e `research.md` R2.
 
   ## O que é garantido, e o que NÃO é
 

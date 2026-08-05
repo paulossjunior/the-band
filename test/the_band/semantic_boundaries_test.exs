@@ -48,7 +48,7 @@ defmodule TheBand.SemanticBoundariesTest do
         (feature 005) e a relação é o inverso: `eo_organizations` tem `tenant_id`, porque um
         Tenant contém várias organizações.
 
-        Ver ADR-0003 (chega na issue #7).
+        Ver ADR-0003.
         """
       end
     end
@@ -91,7 +91,7 @@ defmodule TheBand.SemanticBoundariesTest do
         software do domínio analisado são conceitos das ontologias SPO e SRO, e chegam nas
         features 006 e 013 em tabelas próprias.
 
-        Ver ADR-0003 (chega na issue #7).
+        Ver ADR-0003.
         """
       end
     end

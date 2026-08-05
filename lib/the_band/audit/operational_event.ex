@@ -4,7 +4,7 @@ defmodule TheBand.Audit.OperationalEvent do
   (FR-018, FR-030).
 
   **Não é `spo.performed_activity`** nem qualquer evento do domínio analisado. Não representa
-  atividade de processo de software de projeto observado algum. Ver ADR-0003 (chega na issue #7).
+  atividade de processo de software de projeto observado algum. Ver ADR-0003.
   """
 
   use TheBand.Schema

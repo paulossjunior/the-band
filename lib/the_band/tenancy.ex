@@ -8,7 +8,7 @@ defmodule TheBand.Tenancy do
 
   Row Level Security do PostgreSQL foi testada e descartada nesta feature exatamente por
   falhar nisso: sem o contexto, devolve zero linhas silenciosamente. Um defeito que perdesse o
-  contexto produziria "nenhum dado encontrado" em vez de falha visível. Ver ADR-0002 (chega na issue #7).
+  contexto produziria "nenhum dado encontrado" em vez de falha visível. Ver ADR-0002.
 
   ## Como se obtém acesso a dado
 
@@ -28,7 +28,7 @@ defmodule TheBand.Tenancy do
 
   `Tenant` é a fronteira de isolamento desta instalação. `eo.organization` é a organização do
   mundo real analisada, e chega na feature 005 com `tenant_id` própria. Um Tenant contém várias
-  organizações. Ver ADR-0003 (chega na issue #7).
+  organizações. Ver ADR-0003.
   """
 
   alias TheBand.Tenancy.Commands
