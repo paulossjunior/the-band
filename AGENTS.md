@@ -82,6 +82,33 @@ Faltando qualquer uma, **não incorpore**: relate o que falta. Nunca incorpore p
 
 ---
 
+## Vertical slice — tela e backend juntos
+
+**Instrução permanente da pessoa mantenedora.** Toda entrega mostra **tela e backend na mesma
+proposta de mudança**. Nunca infraestrutura sem consumidor visível.
+
+Ao planejar qualquer feature, responda primeiro: **o que a pessoa vai ver ao final?** Se a resposta é
+"nada ainda", a fatia está mal cortada — corte de novo.
+
+A fatia atravessa todas as camadas: banco → escopo de Tenant → domínio → API ou LiveView → tela.
+
+**Cerimônia proporcional.** Um checklist, não três. Requisitos apenas do que a feature entrega. O
+ciclo Spec Kit continua obrigatório — o princípio I não é negociável — mas 98 requisitos, 24
+critérios e três checklists para um validador de YAML foi excesso, e o excesso foi meu, não exigência
+da constituição.
+
+**O custo que motivou esta regra**: o roadmap original punha a primeira tela na feature **035, de
+39**. Duas features de infraestrutura pura vinham antes, com zero saída visível. Isso foi apontado
+pela pessoa mantenedora depois de horas de trabalho sem nada para olhar, e a crítica estava certa. Eu
+segui o roadmap sem questioná-lo, e devia ter dito na primeira hora que a primeira tela estava a 33
+features de distância.
+
+**E a regra já provou seu valor na primeira aplicação.** A feature 040 encontrou um defeito que
+estava no backend desde a 001: `count_events/1` não aceitava filtro enquanto `list_events/2` aceitava.
+A tela exibiria "41 eventos" mostrando 10. O defeito era invisível sem consumidor.
+
+Roadmap em levas, com o que cada uma mostra: [CLAUDE.md](CLAUDE.md).
+
 ## Armadilhas de execução deste repositório
 
 Cada uma custou tempo de verdade. Nenhuma foi encontrada lendo código.
