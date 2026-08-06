@@ -178,8 +178,9 @@ oferece o mesmo conteúdo que os arquivos declaram.
 4. **Given** um arquivo inválido na base, **When** a compilação é executada, **Then** ela
    reprova e **não** produz base compilada parcial — base parcial mentiria sobre o que o
    modelo semântico afirma.
-5. **Given** a compilação concluída, **When** o resultado é inspecionado, **Then** o conjunto
-   de exemplos reservado **não** faz parte do conhecimento disponível em execução.
+5. **Given** a compilação concluída, **When** o resultado é inspecionado, **Then** nem o
+   conjunto de exemplos reservado, nem o conteúdo proposto, nem o obsoleto fazem parte do
+   conhecimento disponível em execução.
 
 ---
 
@@ -255,60 +256,64 @@ interpretadores de YAML, e cada um é um caminho pelo qual arquivo inválido pod
 em silêncio. A classe de defeito é a mesma encontrada na feature 001, em que uma checagem de
 análise estática não carregava e terminava com código de sucesso.
 
+Cada caso traz o requisito que o resolve. Os que não têm requisito estão marcados, e são
+deliberados: pertencem à medição do plano, não à especificação. Lista de casos em que não se
+sabe o que está decidido é uma armadilha — é assim que buraco silencioso sobrevive à revisão.
+
 **Coerção de tipo pelo interpretador**
 
-- `version: 1.0` é interpretado como número, não como o texto `"1.0"`. Um arquivo com versão
-  `1.10` compararia igual a `1.1`. Como isso é tratado, e a diferença é detectada?
-- `yes`, `no`, `on`, `off`, `y`, `n` são interpretados como booleano por interpretadores que
-  seguem a versão 1.1 da especificação. Um rótulo `pt-BR: no` viraria `false`.
-- `~`, `null` e campo vazio produzem ausência de valor. Campo obrigatório presente com valor
-  vazio é ausência ou é violação?
-- Identificador iniciado por dígito, ou contendo apenas dígitos e pontos, pode ser
-  interpretado como número.
+| Caso | Resolução |
+|---|---|
+| `version: 1.0` é interpretado como número, não como o texto `"1.0"`. Um arquivo com versão `1.10` compararia igual a `1.1` | FR-012 — versão e identificador são texto; recusa se a coerção mudaria o significado |
+| `yes`, `no`, `on`, `off`, `y`, `n` viram booleano em interpretadores que seguem a versão 1.1 da especificação. Um rótulo `pt-BR: no` viraria `false` | FR-012 |
+| `~`, `null` e campo vazio produzem ausência de valor | FR-007 — campo obrigatório com valor vazio é **violação**, não ausência, e a mensagem distingue as duas |
+| Identificador iniciado por dígito, ou só com dígitos e pontos, pode ser interpretado como número | FR-051 — cada segmento começa por letra; FR-012 |
 
 **Estrutura do documento**
 
-- Chave duplicada no mesmo mapeamento: a maioria dos interpretadores mantém a última em
-  silêncio. É recusada?
-- Âncoras e apelidos (`&`, `*`) e chave de mesclagem (`<<:`): a verificação de campo
-  desconhecido acontece antes ou depois da expansão? Antes, um apelido contrabandeia campo
-  desconhecido.
-- Apelidos recursivos que expandem exponencialmente esgotam memória. O repositório é público
-  e aceita propostas de mudança: uma proposta pode derrubar a verificação do servidor.
-- Múltiplos documentos YAML no mesmo arquivo, separados por `---`.
-- Arquivo vazio, arquivo com apenas comentários, arquivo com apenas `---`.
+| Caso | Resolução |
+|---|---|
+| Chave duplicada no mesmo mapeamento: a maioria dos interpretadores mantém a última em silêncio | FR-010 — recusada |
+| Âncoras, apelidos (`&`, `*`) e chave de mesclagem (`<<:`): verificar campo desconhecido antes da expansão deixa um apelido contrabandear campo desconhecido | FR-011 — verificação **após** a expansão, ou recusa do recurso; a escolha fica registrada |
+| Apelidos recursivos que expandem exponencialmente esgotam memória. O repositório é público e aceita propostas de mudança: uma proposta pode derrubar a verificação do servidor | FR-018 — recusa em vez de esgotar o processo |
+| Múltiplos documentos YAML no mesmo arquivo, separados por `---` | FR-071 — recusado; um arquivo, um documento |
+| Arquivo vazio, com apenas comentários, ou com apenas `---` | FR-071 — recusado |
 
 **Sistema de arquivos**
 
-- Extensão `.yml` versus `.yaml`. Se apenas uma é considerada, a outra é um buraco silencioso.
-- Marca de ordem de bytes no início do arquivo, fim de linha estilo Windows, byte que não é
-  UTF-8 válido.
-- Ligação simbólica dentro da base apontando para fora dela.
-- Arquivo com nome iniciado por ponto, ou diretório de metadados do sistema operacional
-  dentro da base.
-- Diretório dentro da base sem arquivo algum: é erro, ou é tolerado?
+| Caso | Resolução |
+|---|---|
+| Extensão `.yml` versus `.yaml` | FR-014 — as duas consideradas, ou a excluída é recusada |
+| Marca de ordem de bytes, fim de linha estilo Windows | FR-072 — tolerados; são formatação e não mudam significado |
+| Byte que não é UTF-8 válido | FR-072 — recusado |
+| Ligação simbólica dentro da base apontando para fora dela | FR-072 — recusada |
+| Arquivo com nome iniciado por ponto, ou diretório de metadados do sistema operacional | FR-072 — ignorado, e a contagem de ignorados é **relatada**, nunca silenciosa |
+| Diretório dentro da base sem arquivo algum | FR-001 — proibido pela constituição |
 
 **Consistência entre manifesto e conteúdo**
 
-- Manifesto declara ontologia sem conteúdo correspondente na base.
-- Conteúdo presente na base sobre ontologia ausente do manifesto.
-- Arquivo declara `schema_version` que nenhum esquema de validação implementa.
-- Arquivo declara `schema_version` diferente do padrão do manifesto: permitido, e por quê?
-- Manifesto declara política de validação não estrita. Isso desliga a verificação?
+| Caso | Resolução |
+|---|---|
+| Manifesto declara ontologia sem conteúdo correspondente | FR-006 — recusado |
+| Conteúdo sobre ontologia ausente do manifesto | FR-006 — recusado |
+| Arquivo declara versão de esquema que nenhum esquema implementa | FR-057 — recusado, nomeando declarada e existente |
+| Arquivo declara versão de esquema diferente do padrão do manifesto | FR-055 — recusado; uma versão viva por esquema |
+| Manifesto declara política de validação não estrita | FR-004 — o próprio manifesto é recusado; não existe interruptor |
 
 **Escala e limite**
 
-- Base com muitos milhares de arquivos: a verificação continua dentro do orçamento de tempo
-  que a feature 001 estabeleceu para a execução completa dos portões?
-- Cadeia de dependências muito profunda, ou grafo muito denso.
-- Mensagem de erro para arquivo com centenas de violações: relata todas, ou para na primeira?
-  Parar na primeira transforma uma correção em muitas rodadas.
+| Caso | Resolução |
+|---|---|
+| Mensagem de erro para arquivo com centenas de violações | FR-015 — todas relatadas; parar na primeira transformaria uma correção em muitas rodadas |
+| Base com muitos milhares de arquivos: cabe no orçamento de tempo? | **Aberto** — SC-012 fixa o orçamento; o número de arquivos que ele suporta é medição do plano, não decisão da especificação |
+| Cadeia de dependências muito profunda, ou grafo muito denso | **Aberto** — mesma razão |
 
 **Segredo**
 
-- Valor que se parece com credencial mas é legítimo — por exemplo, um exemplo de
-  identificador externo. Como se declara a exceção sem abrir caminho para desligar a detecção?
-- Credencial em comentário, e não em valor.
+| Caso | Resolução |
+|---|---|
+| Valor legítimo com forma de credencial — por exemplo, um exemplo de identificador externo | FR-062 a FR-065 — exceção no próprio arquivo, por campo, com justificativa; nunca em escopo maior |
+| Credencial em comentário, e não em valor | FR-024 — comentário é inspecionado |
 
 ## Requirements *(mandatory)*
 
@@ -336,11 +341,25 @@ análise estática não carregava e terminava com código de sucesso.
   reprovar. O manifesto MUST NOT registrar intenção futura — o roteiro das ontologias vive na
   constituição e no guia operacional.
 
+**Versão do esquema de validação**
+
+- **FR-055**: Existe exatamente **uma** versão viva de cada esquema de validação. Todo arquivo
+  MUST declarar a versão de esquema igual ao padrão do manifesto, e divergência MUST reprovar.
+- **FR-056**: Elevar a versão de um esquema MUST migrar todos os arquivos daquele tipo e subir
+  o padrão do manifesto no mesmo conjunto de mudanças. O custo aceito é um conjunto de mudanças
+  grande quando a base crescer; o que se compra é a impossibilidade de duas formas válidas do
+  mesmo tipo conviverem, e de quem lê a base precisar descobrir qual delas está diante.
+- **FR-057**: Arquivo que declare versão de esquema que nenhum esquema implementa MUST
+  reprovar, e a mensagem MUST nomear a versão declarada e a existente.
+
 **Validação por arquivo**
 
 - **FR-007**: Todo arquivo da base MUST declarar o esquema de validação que segue, a versão
   do seu conteúdo, um identificador estável, suas dependências e sua proveniência. A ausência
-  de qualquer um dos cinco MUST reprovar.
+  de qualquer um dos cinco MUST reprovar. Campo obrigatório presente com valor vazio, nulo ou
+  ausente MUST ser tratado como **violação**, não como ausência, e a mensagem MUST distinguir
+  as duas — "campo não declarado" e "campo declarado sem valor" são erros diferentes de quem
+  escreve, e confundi-los faz a pessoa procurar no lugar errado.
 - **FR-008**: A validação MUST recusar qualquer campo não definido pelo esquema, em qualquer
   nível de aninhamento.
 - **FR-009**: A validação MUST recusar arquivo que não seja um documento YAML válido, e MUST
@@ -354,7 +373,8 @@ análise estática não carregava e terminava com código de sucesso.
   independentemente de o interpretador de YAML poder coagi-los a número ou booleano, e MUST
   recusar arquivo em que a coerção mudaria o significado declarado.
 - **FR-013**: A validação MUST recusar arquivo situado dentro da base cujo local ou tipo não
-  seja reconhecido. Arquivo dentro da base MUST NOT ser silenciosamente ignorado.
+  seja reconhecido. Arquivo dentro da base MUST NOT ser silenciosamente ignorado. A **única**
+  exclusão admitida é a de FR-072, e ela não é silenciosa: os ignorados são contados e relatados.
 - **FR-014**: A validação MUST considerar as duas extensões usuais de arquivo YAML, ou MUST
   recusar a que não considerar. Uma extensão silenciosamente ignorada é proibida.
 - **FR-015**: A validação MUST relatar todas as violações encontradas em uma execução, não
@@ -365,6 +385,44 @@ análise estática não carregava e terminava com código de sucesso.
   sucesso apenas quando tiver efetivamente verificado a base e não encontrado violação.
 - **FR-018**: A validação MUST ser resistente a arquivo cuja expansão consuma memória de
   forma descontrolada, recusando-o em vez de esgotar o processo.
+- **FR-071**: Um arquivo MUST conter exatamente um documento, com um mapeamento na raiz.
+  Múltiplos documentos no mesmo arquivo, arquivo vazio, arquivo com apenas comentários e arquivo
+  com apenas o separador de documento MUST reprovar.
+- **FR-072**: A validação MUST tolerar marca de ordem de bytes e fim de linha estilo Windows,
+  que são formatação e não mudam significado; MUST recusar byte que não seja UTF-8 válido; MUST
+  recusar ligação simbólica que aponte para fora da base; e MUST ignorar arquivo cujo nome comece
+  por ponto — relatando **quantos** foram ignorados, porque exclusão que não é contada é
+  indistinguível de arquivo que não foi encontrado.
+
+**Idioma**
+
+- **FR-058**: Todo rótulo e toda definição MUST declarar o texto em português do Brasil **e**
+  em inglês. A ausência de qualquer um dos dois MUST reprovar. A base nasce bilíngue: as
+  ontologias de referência são publicadas em inglês, e sem o texto em inglês nenhuma definição
+  é conferível contra a fonte que a originou.
+- **FR-059**: Os idiomas exigidos MUST ser registrados no manifesto, e a validação MUST derivar
+  a exigência desse registro em vez de fixá-la no código.
+- **FR-060**: Remover um idioma do conjunto exigido MUST ser classificado como mudança
+  incompatível pela comparação entre versões. Sem isso, o registro do manifesto seria um
+  interruptor: bastaria retirar o inglês para uma proposta de mudança incompleta passar.
+- **FR-061**: Idioma declarado em um arquivo e ausente do registro do manifesto MUST reprovar —
+  o campo de rótulo não é dicionário livre.
+
+**Forma e propriedade do identificador estável**
+
+- **FR-051**: Identificador estável MUST usar apenas minúsculas, dígitos, sublinhado e o
+  ponto como separador de segmento. Cada segmento MUST começar por letra. Maiúscula, hífen,
+  espaço, barra e acento MUST reprovar.
+- **FR-052**: A propriedade de um identificador MUST ser determinada pelo campo de ontologia
+  declarado no arquivo, e MUST NOT ser inferida do texto do identificador. FR-023 opera sobre
+  esse campo.
+- **FR-053**: Em arquivo que declara uma ontologia, o primeiro segmento do identificador MUST
+  ser igual ao identificador dessa ontologia. Divergência MUST reprovar — um conceito que
+  declara pertencer a uma ontologia e se identifica com o prefixo de outra é ambíguo quanto ao
+  dono.
+- **FR-054**: Arquivo de mapeamento, de necessidade de informação e de medida MUST NOT ser
+  obrigado a prefixo de ontologia. Seu primeiro segmento nomeia fornecedor ou domínio, e a
+  ontologia alvo é declarada em campo próprio.
 
 **Integridade cruzada e rede de ontologias**
 
@@ -388,6 +446,36 @@ análise estática não carregava e terminava com código de sucesso.
 - **FR-025**: A mensagem de recusa por suspeita de segredo MUST identificar arquivo e
   posição, e MUST NOT reproduzir o valor suspeito — reproduzi-lo o copiaria para o registro
   de execução, que neste repositório é público.
+- **FR-062**: Uma exceção à detecção de segredo MUST ser declarada no próprio arquivo em que o
+  valor está, MUST nomear o campo exato, e MUST trazer justificativa. Exceção sem justificativa
+  MUST reprovar.
+- **FR-063**: O escopo de uma exceção MUST ser um campo de um arquivo. MUST NOT existir exceção
+  por arquivo inteiro, por diretório, por padrão textual, nem global. Exceção que possa ser
+  aplicada em massa é interruptor com outro nome.
+- **FR-064**: Exceção que aponte para campo inexistente MUST reprovar. Exceção órfã é resíduo
+  que continua autorizando o que já não precisa de autorização.
+- **FR-065**: A validação MUST relatar o total de exceções declaradas na base em cada execução.
+  Crescimento do número de exceções MUST ser visível, porque exceção que ninguém conta deixa de
+  ser exceção.
+
+**Estado de maturidade**
+
+- **FR-066**: Todo arquivo de conhecimento MUST declarar seu estado de maturidade entre
+  **proposto**, **ativo** e **obsoleto**. A ausência MUST reprovar, e nenhum outro valor MUST
+  ser aceito.
+- **FR-067**: Apenas arquivo **ativo** MUST entrar na base compilada. Proposto e obsoleto são
+  validados com o mesmo rigor e MUST NOT ser oferecidos ao runtime. Esta exclusão é deliberada e
+  MUST NOT ser confundida com a representação parcial que FR-028 proíbe: parcial é o que sobra
+  de uma compilação que falhou; isto é o resultado íntegro de uma compilação que respeitou o
+  estado declarado.
+- **FR-068**: Arquivo **obsoleto** MUST declarar a versão em que foi descontinuado, a razão, e
+  o que o substitui — ou a afirmação explícita de que nada o substitui. Obsoleto sem substituto
+  declarado nem afirmação de ausência MUST reprovar.
+- **FR-069**: Referência a identificador de arquivo obsoleto MUST reprovar. Conhecimento em
+  vigor MUST NOT depender de conhecimento descontinuado.
+- **FR-070**: A comparação entre versões MUST sinalizar a remoção de um arquivo que não tenha
+  passado pelo estado obsoleto. O caminho de descontinuação existe para avisar quem depende
+  antes de quebrar, e pular esse caminho MUST ficar visível.
 
 **Compilação e disponibilidade em execução**
 
@@ -436,8 +524,9 @@ análise estática não carregava e terminava com código de sucesso.
 **Conteúdo mínimo que a maquinaria verifica**
 
 - **FR-041**: A base MUST conter conteúdo suficiente para exercitar todos os nove esquemas de
-  validação pelo caminho de aceitação. Maquinaria sem sujeito não tem requisito verificável —
-  a mesma classe de problema encontrada na feature 001.
+  validação pelo caminho de aceitação, e MUST exercitar os três estados de maturidade e os dois
+  idiomas obrigatórios. Maquinaria sem sujeito não tem requisito verificável — a mesma classe de
+  problema encontrada na feature 001.
 - **FR-042**: Esse conteúdo MUST usar um espaço de identificadores reservado que não possa
   colidir com identificador de ontologia real, e MUST ser reconhecível como exemplo por quem
   o encontrar sem contexto.
@@ -480,7 +569,9 @@ análise estática não carregava e terminava com código de sucesso.
   versão de conteúdo, identificador estável, dependências declaradas e proveniência
   declarada.
 - **Identificador estável**: Nome que não muda durante a vida do que ele nomeia. Único em
-  toda a base. Sua remoção ou renomeação é mudança incompatível.
+  toda a base. Minúsculas, dígitos e sublinhado, em segmentos separados por ponto, cada
+  segmento começando por letra. Sua remoção ou renomeação é mudança incompatível. **Não** é o
+  que determina a quem ele pertence — isso vem do campo de ontologia declarado no arquivo.
 - **Declaração de dependência**: Conjunto de ontologias das quais um arquivo depende. Sujeita
   às direções permitidas pela constituição. Lista vazia declarada é diferente de campo
   omitido.
@@ -489,8 +580,14 @@ análise estática não carregava e terminava com código de sucesso.
 - **Grafo de conhecimento declarado**: Relação de dependência entre ontologias e de
   referência entre identificadores, derivada dos arquivos. Acíclico e conforme às direções
   permitidas.
+- **Estado de maturidade**: Proposto, ativo ou obsoleto. Declarado por todo arquivo. Só ativo
+  chega ao runtime. Obsoleto permanece na base e declara quando foi descontinuado, por quê e o
+  que o substitui — é o que dá um passo de aviso antes da remoção.
+- **Exceção à detecção de segredo**: Autorização para um valor com forma de credencial em **um**
+  campo de **um** arquivo, com justificativa. Não existe em escopo maior que isso.
 - **Base compilada**: Representação consultável em execução, produzida a partir dos arquivos
-  válidos. Nunca parcial. Não inclui o conteúdo de exemplo.
+  válidos e **ativos**. Nunca parcial. Não inclui o conteúdo de exemplo, nem o proposto, nem o
+  obsoleto.
 - **Conjunto de exemplos reservado**: Conteúdo que exercita os nove esquemas pelo caminho de
   aceitação, em espaço de identificadores que não colide com ontologia real, e ausente da
   base compilada.
@@ -542,6 +639,21 @@ análise estática não carregava e terminava com código de sucesso.
   incluindo o que foi testado e rejeitado.
 - **SC-015**: Zero ontologias implementadas nesta entrega, verificado por teste que reprova
   se módulo ou diretório ontológico aparecer.
+- **SC-016**: A gramática do identificador é exercitada nos dois sentidos: formas válidas são
+  aceitas e cada forma inválida — maiúscula, hífen, espaço, barra, acento, segmento iniciado
+  por dígito, e prefixo divergente da ontologia declarada — é recusada. Recusar tudo não passa.
+- **SC-017**: Nenhum arquivo da base declara versão de esquema diferente do padrão do
+  manifesto, e um arquivo que a declare é recusado. Zero versões de esquema convivendo.
+- **SC-018**: 100% dos rótulos e definições da base declaram os dois idiomas exigidos. A
+  omissão de qualquer um é recusada, e a remoção de um idioma do conjunto exigido é classificada
+  como mudança incompatível.
+- **SC-019**: Os três estados de maturidade são exercitados. Proposto e obsoleto são validados
+  com o mesmo rigor e estão ausentes da base compilada; obsoleto sem substituto declarado nem
+  afirmação de ausência é recusado; referência a obsoleto é recusada; e a remoção que não passou
+  por obsoleto é sinalizada pela comparação.
+- **SC-020**: Toda exceção à detecção de segredo declarada na base tem justificativa e aponta
+  para campo existente. O total de exceções é relatado em cada execução, e é conhecido — não
+  estimado.
 
 ## Assumptions
 
@@ -565,8 +677,9 @@ está dito.
   interruptor. Valor diferente de estrito faz o manifesto ser recusado. A razão é a classe de
   defeito encontrada na feature 001: verificação que pode ser desligada silenciosamente
   termina desligada.
-- **Idioma**: o idioma padrão da base é o português do Brasil, e rótulos e definições podem
-  declarar outros idiomas. Identificadores são estáveis e independentes de idioma.
+- **Idioma**: o idioma padrão da base é o português do Brasil, e o inglês é **igualmente
+  obrigatório** em rótulo e definição — decidido em Clarifications Q6, com o custo aceito
+  registrado lá. Identificadores são estáveis e independentes de idioma, e não são traduzidos.
 - **Sem extensão por Tenant**: os arquivos de conhecimento são globais, conforme a
   constituição. Nenhum mecanismo de extensão por Tenant é construído nesta feature, e nenhum
   campo é reservado antecipadamente para ele.
@@ -599,6 +712,11 @@ está dito.
 | Q1 | A lista de ontologias do manifesto é inventário ou roteiro? | **Inventário verificável** | FR-006 |
 | Q2 | Contra o que a comparação entre versões compara? | **Duas referências do histórico do repositório** | FR-040 |
 | Q3 | O que a verificação de perguntas de competência abrange? | **Só estrutural**, sem linguagem de regra | FR-035 |
+| Q4 | Que forma um identificador pode ter, e quem determina a quem ele pertence? | **Gramática fixa; dono pelo campo de ontologia declarado**, não pelo texto do identificador | FR-051 a FR-054 |
+| Q5 | A base admite versões diferentes do mesmo esquema convivendo? | **Não. Uma versão viva por esquema**; elevar migra todos os arquivos do tipo | FR-055 a FR-057 |
+| Q6 | Rótulo e definição exigem quais idiomas? | **Português do Brasil e inglês, os dois obrigatórios** | FR-058 a FR-061 |
+| Q7 | Como se registra exceção à detecção de segredo? | **No próprio arquivo, por campo, com justificativa** — sem exceção por arquivo, diretório, padrão ou global | FR-062 a FR-065 |
+| Q8 | Arquivo de conhecimento declara estado de maturidade? | **Sim, nos nove tipos**: proposto, ativo, obsoleto. Só ativo entra na base compilada | FR-066 a FR-070 |
 
 ### Registro detalhado: inventário, não roteiro
 
@@ -658,6 +776,117 @@ exemplos são consistentes consigo mesmos.
 verifica que alguma pergunta seja respondível. Quem ler o nome sem ler o relatório pode
 concluir mais do que a verificação garante. É por isso que FR-035 exige a limitação **dentro
 do relatório**, e não apenas nesta especificação.
+
+### Registro detalhado: gramática do identificador e de onde vem a propriedade
+
+O documento de referência tem identificadores que **não** começam por ontologia:
+`github.pull_request.to.cmpo.change_request` começa por fornecedor, e
+`review.time_to_first_review` por palavra de domínio. Uma regra que exigisse prefixo de
+ontologia em todo identificador recusaria três dos nove tipos de arquivo.
+
+**Decidido**: minúsculas, dígitos e sublinhado, em segmentos separados por ponto, cada
+segmento começando por letra. A propriedade vem do **campo de ontologia declarado no
+arquivo**, não do texto do identificador — é sobre esse campo que FR-023 opera. Onde o arquivo
+declara ontologia, o primeiro segmento tem de coincidir com ela; onde não declara, não há
+obrigação de prefixo.
+
+**Rejeitado**: exigir que todo primeiro segmento nomeie algo registrado no manifesto,
+acrescentando um registro de espaços de fornecedor e de domínio. Fecharia o caso de
+identificador órfão nos nove tipos, e foi rejeitado por acrescentar ao manifesto um registro
+que a feature 002 não tem conteúdo para exercitar — nenhum fornecedor existe até a feature
+024. Fica disponível como reforço futuro.
+
+**Rejeitado**: apenas unicidade, sem gramática. Deixaria FR-023 sem base para operar, e
+permitiria `sro.user_story`, `SRO.UserStory` e `sro/user_story` coexistindo como três coisas
+distintas. Também deixaria `1.0` como identificador aceitável, que é exatamente o caso de
+coerção que FR-012 recusa.
+
+### Registro detalhado: uma versão viva por esquema
+
+**Decidido**: todo arquivo declara a versão de esquema igual ao padrão do manifesto. Elevar um
+esquema migra todos os arquivos daquele tipo no mesmo conjunto de mudanças.
+
+**Custo aceito**: quando a base crescer, elevar um esquema produzirá um conjunto de mudanças
+grande. **O que se compra**: nunca existem duas formas válidas do mesmo tipo, e quem lê a base
+nunca precisa descobrir qual delas está diante — nem o validador, nem a comparação semântica,
+nem quem revisa.
+
+**Rejeitado**: janela de convivência declarada no manifesto. Permitiria migração gradual, e foi
+rejeitado porque multiplica o número de formas válidas simultâneas por tipo, e a comparação
+semântica passaria a comparar arquivos de formas diferentes — onde "mudou de forma" e "mudou de
+afirmação" ficam entrelaçados.
+
+**Rejeitado**: não versionar esquema. Contraria o documento de referência e apagaria a distinção
+entre mudança de forma e mudança de afirmação, que é justamente o que a comparação semântica
+precisa separar.
+
+### Registro detalhado: base bilíngue, com o custo declarado
+
+**Decidido**: português do Brasil e inglês são **os dois** obrigatórios em rótulo e definição.
+
+**Razão**: as ontologias de referência — UFO, SEON e a rede — são publicadas em inglês. Sem o
+texto em inglês, nenhuma definição é conferível contra a fonte que a originou, e a revisão
+semântica perde seu instrumento principal.
+
+**Custo aceito, e ele é real**: dobra o trabalho de escrita nas doze ontologias, e nenhuma
+feature da 003 em diante pode entregar sem tradução revisada. A recomendação apresentada era
+exigir só o idioma padrão, justamente por esse custo. **A escolha foi deliberada, contra a
+recomendação, e o custo fica registrado aqui para que não seja redescoberto como surpresa na
+003.**
+
+**Salvaguarda**: o conjunto de idiomas exigidos vive no manifesto, e retirar um idioma dele é
+classificado como mudança incompatível (FR-060). Sem isso, o registro seria um interruptor:
+bastaria retirar o inglês para uma proposta de mudança incompleta passar.
+
+**Rejeitado**: rótulo e definição como texto simples, sem chave de idioma. Acrescentar idioma
+depois seria mudança incompatível de forma em todo arquivo da base, de uma vez.
+
+### Registro detalhado: exceção de segredo por campo, nunca em massa
+
+**Decidido**: a exceção mora no arquivo em que o valor está, nomeia o campo exato, e traz
+justificativa obrigatória. Vale para aquele campo e nada mais.
+
+**Razão**: a exceção fica visível na revisão da própria mudança que a introduz. Não existe
+exceção por arquivo, por diretório, por padrão textual nem global — qualquer uma dessas pode ser
+aplicada em massa, e o que se aplica em massa é interruptor com outro nome. Neste repositório,
+que é público, a falha dessa verificação custa vazamento, não achado.
+
+**Salvaguardas**: exceção que aponte para campo inexistente reprova (FR-064), porque exceção
+órfã continua autorizando o que já não precisa de autorização. E a validação relata o total de
+exceções da base em cada execução (FR-065), porque exceção que ninguém conta deixa de ser
+exceção.
+
+**Rejeitado**: lista central de exceções. É auditável num só lugar, o que é vantagem real, e foi
+rejeitada porque quem revisa o arquivo de conhecimento não veria que ele tem exceção — e a lista
+envelheceria apontando para campos removidos, exigindo sua própria verificação.
+
+**Rejeitado**: nenhuma exceção. É a regra mais forte e sem contorno, e foi rejeitada porque o
+padrão de detecção passaria a limitar o que a base consegue dizer: documentar o formato de
+identificador de um fornecedor ficaria restrito a descrição indireta.
+
+### Registro detalhado: estado de maturidade e o caminho de descontinuação
+
+**Decidido**: os nove tipos declaram estado — proposto, ativo ou obsoleto. Só ativo entra na base
+compilada. Obsoleto permanece na base, declara em que versão foi descontinuado, por quê, e o que
+o substitui.
+
+**Razão**: sem estado, retirar um conceito é remoção direta, e quem dependia dele descobre quando
+a verificação reprova. Com estado, existe um passo para avisar antes de quebrar. A comparação
+entre versões sinaliza remoção que não passou por obsoleto (FR-070), para que o caminho não seja
+apenas disponível, mas o esperado.
+
+**Consequência sobre FR-028**: excluir proposto e obsoleto da base compilada **não** é a
+representação parcial que FR-028 proíbe. Parcial é o que sobra de uma compilação que falhou;
+isto é o resultado íntegro de uma compilação que respeitou o estado declarado. A distinção está
+escrita em FR-067 porque, sem ela, os dois requisitos se contradizem na leitura.
+
+**Rejeitado**: estado só em mapeamento, como no documento de referência. Segue a fonte
+literalmente e custa menos campo em oito dos nove esquemas, e foi rejeitado porque deixaria
+conceito e relação — o que mais é referenciado, e portanto o que mais quebra ao ser removido —
+sem caminho de descontinuação.
+
+**Rejeitado**: sem estado algum. Acrescentá-lo depois seria mudança de forma nos nove esquemas e
+em todo arquivo da base, simultaneamente.
 
 ## Out of Scope
 
