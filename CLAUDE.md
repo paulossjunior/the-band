@@ -43,7 +43,7 @@ imposto por análise estática.
 | Req | dependência presente, **nenhum conector** — feature 025 |
 | Isolamento por Tenant | **existe** — escopo que levanta; RLS descartada, ver ADR-0002 |
 | Verificação automática | `ci.yml` + `security.yml`, 3 status checks obrigatórios |
-| Registros de decisão | ADR-0001, 0002, 0003, **0004** em `docs/adr/` |
+| Registros de decisão | ADR-0001 a **0006** em `docs/adr/` |
 | Contrato OpenAPI dos serviços | **ausente** — regra vale desde já, dívida paga pela feature 039 |
 | `priv/knowledge_base/` | **ausente** — feature 002 |
 | Módulos ontológicos | **ausentes** — features 003+ |
@@ -176,9 +176,22 @@ Proibido por padrão (só com feature + análise comparativa + ADR): Python, Go,
 separado em TypeScript, Node.js como requisito central, NATS, Kafka, RabbitMQ, Redis
 como fila, Apache AGE, Neo4j, pgvector, Kubernetes, Helm, microserviços.
 
-Biblioteca nova exige justificativa no `plan.md`. Biblioteca YAML ainda **não
-escolhida** — decidir no `/speckit-plan` da feature 002, com pesquisa de manutenção,
-segurança e compatibilidade, e registrar em ADR.
+Biblioteca nova exige justificativa no `plan.md`.
+
+**Biblioteca YAML: decidida por medição**, não por conveniência —
+[ADR-0005](docs/adr/0005-biblioteca-yaml-e-portao-de-tokens.md).
+
+- `yaml_elixir` constrói, sempre com `read_all_from_string/2`. Nunca `read_from_string/2`, que
+  descarta documentos em silêncio;
+- **antes dela, um portão de tokens** com `:yamerl_parser`, que recusa âncora, apelido, chave
+  duplicada, tabulação na indentação e múltiplos documentos. Não é otimização: um arquivo de **814
+  bytes** de apelidos aninhados **mata o processo**, e nenhuma biblioteca oferece limite de nós;
+- `fast_yaml` descartada por não compilar sem `libyaml` do sistema numa máquina limpa;
+- **nenhuma** biblioteca de validação de esquema. Escrita em Elixir.
+
+**Carregamento**: uma vez na inicialização, para `:persistent_term`. YAML inválido **impede o
+arranque** — base parcial mentiria sobre o modelo semântico.
+[ADR-0006](docs/adr/0006-estrategia-de-carregamento-da-base-de-conhecimento.md).
 
 ## Base de conhecimento YAML
 

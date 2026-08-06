@@ -265,7 +265,8 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 | Caso | Resolução |
 |---|---|
 | `version: 1.0` é interpretado como número, não como o texto `"1.0"`. Um arquivo com versão `1.10` compararia igual a `1.1` | FR-012 — versão e identificador são texto; recusa se a coerção mudaria o significado |
-| `yes`, `no`, `on`, `off`, `y`, `n` viram booleano em interpretadores que seguem a versão 1.1 da especificação. Um rótulo `pt-BR: no` viraria `false` | FR-012 |
+| `yes`, `no`, `on`, `off` viram booleano em interpretadores que seguem a versão 1.1 da especificação | FR-012 — **e a medição corrigiu a especificação**: as bibliotecas escolhidas **não** coagem esses valores, devolvem texto (research.md R3). O caso fica registrado porque troca de biblioteca ou de versão o reintroduz, agora com a medição ao lado em vez da suposição |
+| **Tabulação na indentação.** `"a:\n\tb: 1"` produz `%{"a" => nil, "b" => 1}` — `b` deveria estar **dentro** de `a` e virou irmão. Estrutura corrompida em silêncio, e o esquema recebe uma árvore válida que não é a que quem escreveu enxergou | FR-072 — **caso encontrado por medição, ausente da primeira versão desta lista** (research.md R7) |
 | `~`, `null` e campo vazio produzem ausência de valor | FR-007 — campo obrigatório com valor vazio é **violação**, não ausência, e a mensagem distingue as duas |
 | Identificador iniciado por dígito, ou só com dígitos e pontos, pode ser interpretado como número | FR-051 — cada segmento começa por letra; FR-012 |
 
@@ -275,7 +276,7 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 |---|---|
 | Chave duplicada no mesmo mapeamento: a maioria dos interpretadores mantém a última em silêncio | FR-010 — recusada |
 | Âncoras, apelidos (`&`, `*`) e chave de mesclagem (`<<:`): verificar campo desconhecido antes da expansão deixa um apelido contrabandear campo desconhecido | FR-011 — verificação **após** a expansão, ou recusa do recurso; a escolha fica registrada |
-| Apelidos recursivos que expandem exponencialmente esgotam memória. O repositório é público e aceita propostas de mudança: uma proposta pode derrubar a verificação do servidor | FR-018 — recusa em vez de esgotar o processo |
+| Apelidos recursivos que expandem exponencialmente esgotam memória. O repositório é público e aceita propostas de mudança: uma proposta pode derrubar a verificação do servidor | FR-018 — **medido, e é grave**: 588 bytes produzem termo de 101 milhões de palavras em 786 ms; **814 bytes não terminam em 15 segundos e o processo é morto**. Nenhuma biblioteca oferece limite de nós. Recusa antes de construir o termo (research.md R6, ADR-0005) |
 | Múltiplos documentos YAML no mesmo arquivo, separados por `---` | FR-071 — recusado; um arquivo, um documento |
 | Arquivo vazio, com apenas comentários, ou com apenas `---` | FR-071 — recusado |
 
