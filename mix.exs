@@ -35,9 +35,17 @@ defmodule TheBand.MixProject do
     ]
   end
 
+  # `gates` PRECISA estar aqui. O alias termina em `test`, e `mix test` se recusa a rodar fora do
+  # ambiente `:test`. Sem esta entrada, `mix gates` executa quatro dos cinco portões, morre no quinto
+  # com `** (Mix) "mix test" is running in the "dev" environment` e sai com código 1 — enquanto
+  # `CLAUDE.md` e `README.md` o documentam como o comando que roda os cinco. Verificado: issue #29.
+  #
+  # Consequência aceita: `mix gates` passa a usar `priv/plts/dialyzer-test.plt` em vez do de `dev`,
+  # porque o nome do PLT inclui o ambiente de propósito (ver a configuração de `dialyzer` acima). A
+  # primeira execução após esta mudança reconstrói aquele PLT.
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [gates: :test, precommit: :test]
     ]
   end
 
