@@ -108,16 +108,28 @@ defmodule TheBand.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
 
+      # Base de conhecimento declarativa (feature 002). Escolhida POR MEDIÇÃO, não por
+      # conveniência — ver docs/adr/0005-biblioteca-yaml-e-portao-de-tokens.md e
+      # specs/002-knowledge-base-infrastructure/research.md, R1 a R11.
+      #
+      # Ela já estava aqui como dependência transitiva `only: [:dev, :test]` do `mix_audit`, com um
+      # aviso dizendo que aquela presença NÃO era a escolha. A escolha foi feita depois, medindo:
+      # `fast_yaml` foi descartada por não compilar sem `libyaml` do sistema, e `yamerl` puro por
+      # lançar em vez de devolver erro e por entregar charlists.
+      #
+      # Duas regras de uso, cada uma com medição por trás:
+      #
+      #   1. SEMPRE `read_all_from_string/2`. NUNCA `read_from_string/2`, que devolve apenas o
+      #      último documento de um arquivo com vários, descartando os anteriores em silêncio, e
+      #      devolve `%{}` para arquivo vazio — indistinguível de mapeamento vazio legítimo (R8);
+      #   2. SEMPRE atravessar `TheBand.Knowledge.TokenGate` antes. Um arquivo de 814 bytes de
+      #      apelidos aninhados NÃO TERMINA em 15 segundos e mata o processo, e nenhuma biblioteca
+      #      de YAML oferece limite de nós (R6).
+      {:yaml_elixir, "~> 2.12"},
+
       # FR-033 exige reprovar dependência com vulnerabilidade conhecida. `mix hex.audit`, que
       # é embutido, só detecta pacote aposentado — não avisos de segurança. `mix_audit` compara
       # `mix.lock` com a base de avisos do ecossistema Elixir.
-      #
-      # ATENÇÃO: `mix_audit` traz `yaml_elixir` e `yamerl` como dependências transitivas, e
-      # **isso não é a escolha de biblioteca YAML do projeto**. A biblioteca da base de
-      # conhecimento declarativa pertence à feature 002 e exige pesquisa própria de manutenção,
-      # segurança e compatibilidade, com ADR — conforme a constituição. Nada aqui antecipa essa
-      # decisão: estas dependências são `only: [:dev, :test]` e servem à ferramenta de
-      # auditoria, não ao domínio.
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
   end
