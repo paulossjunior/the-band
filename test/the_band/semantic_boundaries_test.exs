@@ -117,13 +117,14 @@ defmodule TheBand.SemanticBoundariesTest do
       """
     end
 
-    test "não existem diretórios de ontologia nem de base de conhecimento" do
+    test "não existem diretórios de ontologia" do
       # A constituição proíbe criar pasta vazia antes de a feature justificar.
+      #
+      # T004: este teste garantia também a ausência de `priv/knowledge_base/`. A feature 002 passou a
+      # construí-la, então a asserção foi retirada — e SÓ ela. A ausência de ontologia continua
+      # verificada, porque nenhuma ontologia é modelada nem na 002.
       refute File.dir?("lib/the_band/ontology"),
              "lib/the_band/ontology/ pertence às features 003 em diante"
-
-      refute File.dir?("priv/knowledge_base"),
-             "priv/knowledge_base/ pertence à feature 002"
     end
 
     test "nenhuma tabela usa prefixo de ontologia" do
