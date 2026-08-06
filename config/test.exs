@@ -42,3 +42,12 @@ config :phoenix_live_view,
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+# Feature 040, FR-010. A tela de eventos operacionais vive sob `dev_routes` porque não existe
+# autenticação nesta plataforma. Habilitar aqui é o que torna a tela testável — mesmo padrão que o
+# Phoenix usa para o LiveDashboard.
+#
+# A garantia que importa é que PRODUÇÃO não habilita. Ela é provada por compilação real em
+# `MIX_ENV=prod`, registrada na evidência do PR, e protegida contra regressão por
+# `TheBandWeb.DevRoutesTest`.
+config :the_band, dev_routes: true

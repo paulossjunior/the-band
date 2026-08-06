@@ -61,7 +61,7 @@ defmodule TheBand.Audit do
   ignorasse o escopo vazaria **volume** de outro contratante, e volume já é informação.
   """
   @spec count_events(Scope.t()) :: non_neg_integer()
-  defdelegate count_events(scope), to: Queries, as: :count
+  defdelegate count_events(scope, opts \\ []), to: Queries, as: :count
 
   @doc """
   Busca evento por identificador, dentro do escopo.
@@ -72,6 +72,14 @@ defmodule TheBand.Audit do
   @spec fetch_event(Scope.t(), Ecto.UUID.t()) ::
           {:ok, OperationalEvent.t()} | {:error, :not_found}
   defdelegate fetch_event(scope, event_id), to: Queries, as: :fetch
+
+  @doc """
+  Tipos distintos de evento presentes no Tenant do escopo.
+
+  Feature 040, FR-003 — alimenta o filtro da tela. Lista fixa no código mentiria assim que um tipo
+  novo aparecesse.
+  """
+  defdelegate list_event_types(scope), to: Queries, as: :list_types
 
   @doc """
   Remove eventos do Tenant do escopo anteriores a `before`.

@@ -45,4 +45,20 @@ defmodule TheBandWeb.Router do
 
     get "/", HealthDetailController, :show
   end
+
+  # Feature 040, FR-010. A tela de eventos operacionais existe APENAS em desenvolvimento.
+  #
+  # Não existe autenticação nesta plataforma. A tela recebe o slug do Tenant na URL, então quem a
+  # alcança lê qualquer Tenant. Roteá-la em produção seria entregar leitura irrestrita; exigir o
+  # segredo de operação seria segurança de fachada, porque o navegador não tem como enviá-lo.
+  #
+  # Mesmo padrão que o Phoenix usa para o LiveDashboard. Quando a autenticação existir, a rota sai
+  # daqui e passa a exigir credencial. Há teste de que ela NÃO existe fora de desenvolvimento.
+  if Application.compile_env(:the_band, :dev_routes) do
+    scope "/dev", TheBandWeb do
+      pipe_through :browser
+
+      live "/eventos/:tenant_slug", OperationalEventsLive, :index
+    end
+  end
 end

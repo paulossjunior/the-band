@@ -42,7 +42,7 @@ defmodule TheBand.Audit.Queries do
   def list(scope, opts \\ []) do
     scope
     |> scoped()
-    |> maybe_filter_type(Keyword.get(opts, :type))
+    |> aplicar_filtros(opts)
     |> order_by([e], desc: e.occurred_at)
     |> limit(^Keyword.get(opts, :limit, 100))
     |> Repo.all()
@@ -54,11 +54,26 @@ defmodule TheBand.Audit.Queries do
   Existe separada de `list/2` porque SC-003 exige que a **contagem** também não alcance outro
   Tenant. Uma contagem que ignorasse o escopo vazaria volume mesmo sem vazar conteúdo — e
   volume já é informação sobre o outro contratante.
+
+  ## Aceita os MESMOS filtros de `list/2`, e isso é requisito
+
+  Feature 040, FR-002. Enquanto esta função não aceitava filtro, uma tela que filtrasse a lista e
+  usasse a contagem exibiria "142 eventos" mostrando 3 — um número que contradiz o que está na tela.
+
+  As duas funções compartilham `aplicar_filtros/2` de propósito: se os filtros divergirem, a
+  contagem e a lista passam a discordar, e a tela mente. Há teste de que os dois concordam.
+
+  ## Opções
+
+    * `:type` — filtra por tipo
+    * `:since` — apenas eventos a partir deste instante, inclusive
+    * `:correlation_id` — apenas eventos desta correlação
   """
-  @spec count(Scope.t()) :: non_neg_integer()
-  def count(scope) do
+  @spec count(Scope.t(), keyword()) :: non_neg_integer()
+  def count(scope, opts \\ []) do
     scope
     |> scoped()
+    |> aplicar_filtros(opts)
     |> select([e], count(e.id))
     |> Repo.one()
   end
@@ -125,6 +140,45 @@ defmodule TheBand.Audit.Queries do
     |> Repo.all()
   end
 
+  @doc """
+  Tipos distintos de evento presentes no Tenant do escopo, ordenados.
+
+  Existe para alimentar o filtro da tela. Uma lista de tipos fixa no código mentiria assim que um
+  tipo novo aparecesse — e os tipos vêm de trabalhadores e conectores que ainda não existem.
+
+  Também é consulta escopada: o vocabulário de tipos de um contratante já é informação sobre ele.
+  """
+  @spec list_types(Scope.t()) :: [String.t()]
+  def list_types(scope) do
+    scope
+    |> scoped()
+    |> distinct(true)
+    |> select([e], e.type)
+    |> order_by([e], asc: e.type)
+    |> Repo.all()
+  end
+
+  # Um único lugar aplica filtros, e `list/2` e `count/2` o compartilham. Se cada uma tivesse a sua
+  # cópia, elas divergiriam com a primeira opção nova, e a contagem passaria a contradizer a lista.
+  defp aplicar_filtros(query, opts) do
+    query
+    |> maybe_filter_type(Keyword.get(opts, :type))
+    |> maybe_filter_since(Keyword.get(opts, :since))
+    |> maybe_filter_correlation(Keyword.get(opts, :correlation_id))
+  end
+
   defp maybe_filter_type(query, nil), do: query
+  defp maybe_filter_type(query, ""), do: query
   defp maybe_filter_type(query, type), do: where(query, [e], e.type == ^type)
+
+  defp maybe_filter_since(query, nil), do: query
+
+  defp maybe_filter_since(query, %DateTime{} = since),
+    do: where(query, [e], e.occurred_at >= ^since)
+
+  defp maybe_filter_correlation(query, nil), do: query
+  defp maybe_filter_correlation(query, ""), do: query
+
+  defp maybe_filter_correlation(query, correlation_id),
+    do: where(query, [e], e.correlation_id == ^correlation_id)
 end
