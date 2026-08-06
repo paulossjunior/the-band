@@ -43,14 +43,16 @@ imposto por análise estática.
 | Req | dependência presente, **nenhum conector** — feature 025 |
 | Isolamento por Tenant | **existe** — escopo que levanta; RLS descartada, ver ADR-0002 |
 | Verificação automática | `ci.yml` + `security.yml`, 3 status checks obrigatórios |
-| Registros de decisão | ADR-0001, 0002, 0003 em `docs/adr/` |
+| Registros de decisão | ADR-0001 a **0006** em `docs/adr/` |
+| Contrato OpenAPI dos serviços | **ausente** — regra vale desde já, dívida paga pela feature 039 |
 | `priv/knowledge_base/` | **ausente** — feature 002 |
 | Módulos ontológicos | **ausentes** — features 003+ |
 
 Tabelas existentes: `tenants`, `operational_events`, e as do Oban. Nenhuma com prefixo de
 ontologia — há teste que falha se aparecer.
 
-Próxima feature: **002 — Infraestrutura da base de conhecimento YAML**.
+Feature em curso: **002 — Infraestrutura da base de conhecimento YAML** — `specify`, `clarify` e
+`checklist` concluídos; `plan` a seguir.
 
 ### O que subir e verificar
 
@@ -174,9 +176,22 @@ Proibido por padrão (só com feature + análise comparativa + ADR): Python, Go,
 separado em TypeScript, Node.js como requisito central, NATS, Kafka, RabbitMQ, Redis
 como fila, Apache AGE, Neo4j, pgvector, Kubernetes, Helm, microserviços.
 
-Biblioteca nova exige justificativa no `plan.md`. Biblioteca YAML ainda **não
-escolhida** — decidir no `/speckit-plan` da feature 002, com pesquisa de manutenção,
-segurança e compatibilidade, e registrar em ADR.
+Biblioteca nova exige justificativa no `plan.md`.
+
+**Biblioteca YAML: decidida por medição**, não por conveniência —
+[ADR-0005](docs/adr/0005-biblioteca-yaml-e-portao-de-tokens.md).
+
+- `yaml_elixir` constrói, sempre com `read_all_from_string/2`. Nunca `read_from_string/2`, que
+  descarta documentos em silêncio;
+- **antes dela, um portão de tokens** com `:yamerl_parser`, que recusa âncora, apelido, chave
+  duplicada, tabulação na indentação e múltiplos documentos. Não é otimização: um arquivo de **814
+  bytes** de apelidos aninhados **mata o processo**, e nenhuma biblioteca oferece limite de nós;
+- `fast_yaml` descartada por não compilar sem `libyaml` do sistema numa máquina limpa;
+- **nenhuma** biblioteca de validação de esquema. Escrita em Elixir.
+
+**Carregamento**: uma vez na inicialização, para `:persistent_term`. YAML inválido **impede o
+arranque** — base parcial mentiria sobre o modelo semântico.
+[ADR-0006](docs/adr/0006-estrategia-de-carregamento-da-base-de-conhecimento.md).
 
 ## Base de conhecimento YAML
 
@@ -207,6 +222,65 @@ Uma base PostgreSQL, tabelas compartilhadas, `tenant_id` nas entidades relevante
 políticas de acesso. Não um banco por tenant. Todo acesso considera o tenant atual.
 Jobs Oban carregam e validam `tenant_id`. YAMLs são globais por padrão.
 
+## Serviços HTTP têm contrato OpenAPI — sempre
+
+**Todo serviço HTTP exposto pela plataforma tem especificação OpenAPI publicada, sem exceção.**
+Endpoint sem contrato declarado não entra. A regra vale para APIs REST, para o motor de consulta
+declarativa da feature 025 e para qualquer superfície futura consumida por outro programa.
+
+Por quê: o contrato é o que permite avaliar compatibilidade antes de mudar — e a constituição
+proíbe alterar contrato sem avaliar compatibilidade. Sem especificação, "o contrato" é o código, e
+a avaliação vira leitura de diff.
+
+Obrigatório em todo serviço:
+
+- caminho, método, parâmetros, corpo e **todas** as respostas, inclusive as de erro;
+- esquema de autenticação, quando houver;
+- o contrato **gerado ou verificado a partir do código**, nunca escrito à mão em paralelo. Contrato
+  mantido à mão divergirá, e um contrato que mente é pior que nenhum;
+- teste que reprova quando rota, parâmetro ou resposta divergem do contrato — senão a regra é
+  decorativa;
+- versão declarada, e mudança incompatível declarada como incompatível.
+
+Proibido: contrato que exponha segredo, cabeçalho de autenticação com valor real, exemplo com
+credencial, ou host interno.
+
+### Dois documentos, e a divisão é derivada — não escolhida
+
+O repositório é público. A feature 001 decidiu que `/health` não nomeia componente algum
+justamente porque a URL fica documentada, e que `/health/detail` recusa todo acesso sem credencial.
+Um documento OpenAPI público que enumere `/health/detail` e seu esquema de autenticação entrega
+reconhecimento de infraestrutura — **anula a decisão da 001 por outro caminho, sem revogá-la.**
+
+| Documento | Acesso | Conteúdo |
+|---|---|---|
+| público | sem credencial | só endpoints cujo pipeline é público |
+| interno | credencial de operação | todos, com esquema de autenticação |
+
+O balde de cada endpoint é **derivado do pipeline de autenticação da rota**, nunca escolhido à mão.
+Divisão por julgamento erra em silêncio: alguém acrescenta rota privilegiada, esquece de marcá-la, e
+ela aparece no documento público sem nada reprovar. Derivada do pipeline, o erro exige mudar a
+autenticação da rota — que é visível. E há teste que reprova se rota de operador aparecer no
+documento público, porque derivação sem teste é convenção.
+
+Registrado em [ADR-0004](docs/adr/0004-contrato-openapi-e-sua-exposicao.md), com as duas
+alternativas rejeitadas e o motivo de cada uma.
+
+### Estado: a regra nasceu com duas violações
+
+**Nenhum contrato OpenAPI existe.** Os dois endpoints da feature 001 foram entregues sem ele. A
+dívida é paga pela **feature 039**, que fica imediatamente antes da 025 — a primeira a expor serviço
+para consumidor de verdade. Não é retrofitada dentro de outra feature: a constituição proíbe misturar
+features independentes.
+
+A **emenda da constituição está adiada de propósito**: a regra vive aqui até a 039, e a emenda MINOR
+entra no mesmo PR que a implementa. Emendar agora colocaria a constituição em violação imediata
+pelos dois endpoints existentes, e norma que nasce violada ensina que norma pode ser violada.
+Enquanto isso, em conflito a constituição prevalece sobre este arquivo — e ela ainda não exige
+contrato.
+
+A biblioteca exige justificativa no `plan.md` da 039. Nada aqui antecipa a escolha.
+
 ## Fluxo de trabalho
 
 Comandos do Spec Kit instalado usam **hífen**, não ponto:
@@ -227,6 +301,14 @@ Necessidade → Discovery → Feature Request
 → branch → implementação → testes → quality gates → convergência
 → Pull Request → revisão independente → merge
 ```
+
+O passo `aprovação` do ciclo foi **delegado** por instrução permanente da pessoa mantenedora: o
+agente roda o ciclo ponta a ponta e interrompe apenas pelos motivos de uma lista fechada de onze
+itens. A lista, as condições de incorporação e as armadilhas de execução já pagas neste
+repositório estão em [AGENTS.md](AGENTS.md) — é o único lugar onde vivem, de propósito.
+
+A delegação não dispensa a aprovação: é aprovação concedida uma vez. Enquanto a constituição não
+registrar a delegação por emenda, o princípio I prevalece sobre o `AGENTS.md` em caso de disputa.
 
 Branches: `feature|fix|refactor|docs|test|chore/<issue>-<descricao>`
 
@@ -294,14 +376,19 @@ excessivo ou valor fixo.
 ## Roadmap
 
 ```text
-001 Fundação Phoenix e governança      ← PRÓXIMA
-002 Infraestrutura da base YAML
+001 Fundação Phoenix e governança      ✔ ENTREGUE (94/95, T088 pendente)
+002 Infraestrutura da base YAML        ← EM CURSO
 003 Infraestrutura comum de ontologias
 
 # vertical fina de valor: prova o pipeline ponta a ponta antes de ampliar ontologias
-005 EO → 009 CMPO → 024 fontes externas → 025 motor GraphQL/YAML
+005 EO → 009 CMPO → 024 fontes externas
+→ 039 contrato OpenAPI → 025 motor GraphQL/YAML
 → 026 GitHub→EO → 027 GitHub→CMPO → 031 necessidades → 032 medidas
    entrega: "tempo até a primeira revisão" de ponta a ponta
+
+# 039 recebe número novo em vez de renumerar 025–038: renumerar quebraria toda
+# referência já escrita. Ela vem antes da 025 porque a 025 é a primeira feature a
+# expor serviço para consumidor, e paga a dívida dos dois endpoints da 001.
 
 # ampliação sob demanda
 004 UFO · 006 SPO · 007 SysSwO · 008 RSRO · 010 ROoST · 011 QAPO · 012 OSDEF

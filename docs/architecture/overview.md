@@ -103,6 +103,7 @@ Duas tabelas de domínio próprio — `tenants` e `operational_events` — mais 
 | Conectores do GitHub | 026 a 030 |
 | Necessidades de informação, medidas, analytics, Reportify, painel | 031 a 035 |
 | Qualquer trabalhador assíncrono próprio | 005 (issue #5) |
+| **Contrato OpenAPI dos dois endpoints de saúde** | 039 — dívida declarada, ver ADR-0004 |
 
 A infraestrutura de trabalho assíncrono **está** de pé — supervisão, migração, fila — e nenhum
 trabalhador foi escrito ainda.
@@ -177,6 +178,7 @@ persistido, e num banco isso alcança backup e réplica.
 | [0001](../adr/0001-monolito-modular-multitenant.md) | Monólito modular multitenant em Elixir/Phoenix |
 | [0002](../adr/0002-estrategia-de-isolamento-por-tenant.md) | Onde e como o isolamento é imposto; por que RLS foi descartada |
 | [0003](../adr/0003-tenant-nao-e-organizacao.md) | Tenant não é Organização, e por que fundir destruiria o produto |
+| [0004](../adr/0004-contrato-openapi-e-sua-exposicao.md) | Todo serviço HTTP tem contrato OpenAPI, e por que o documento é dividido por credencial |
 
 ## Referências
 
