@@ -4,12 +4,13 @@
 
 **Data**: 2026-08-06
 
-**Especificação**: [spec.md](spec.md) — 92 requisitos funcionais, 24 critérios de sucesso
+**Especificação**: [spec.md](spec.md) — 98 requisitos funcionais, 24 critérios de sucesso
 
 **Pesquisa**: [research.md](research.md) — R1 a R11, medidos
 
 **Registros de decisão**: [ADR-0005](../../docs/adr/0005-biblioteca-yaml-e-portao-de-tokens.md) ·
-[ADR-0006](../../docs/adr/0006-estrategia-de-carregamento-da-base-de-conhecimento.md)
+[ADR-0006](../../docs/adr/0006-estrategia-de-carregamento-da-base-de-conhecimento.md) ·
+[ADR-0007](../../docs/adr/0007-yaml-normativo-e-conformidade-verificada.md)
 
 ## Summary
 
@@ -32,6 +33,9 @@ disponíveis oferece limite de nós. O portão de tokens não é otimização �
 | Representação em execução | `:persistent_term`, carregada na inicialização | ADR-0006 |
 | Grafo e ciclos | escrito em Elixir; `:digraph` do OTP é opção de implementação, sem dependência nova | — |
 | Comparação entre versões | duas referências do histórico do repositório | spec Q2 |
+| Relação YAML ↔ schema Ecto | **o YAML é normativo e define tipos e cardinalidades**; implementação derivada dele, conformidade conferida por teste na feature 003. Sem gerador | ADR-0007, spec Q9 |
+| Granularidade | **um conceito, uma relação ou uma pergunta por arquivo** | spec Q10 |
+| Limite por arquivo | **256 KiB e 2 s**, derivados de R11 | spec Q11 |
 
 ### Justificativa da dependência
 
@@ -52,7 +56,7 @@ respectivamente, OTP, OTP e uma dependência que já vem com `yaml_elixir`.
 | Princípio | Como esta feature obedece |
 |---|---|
 | I — especificação antes de código | `specify`, `clarify` e `checklist` concluídos antes deste plano. Nenhuma linha escrita ainda |
-| II — semântica primeiro | nenhuma ontologia modelada; os esquemas exigem classificação ontológica e reciprocidade (FR-076, FR-080) para que as distinções não negociáveis não possam ser fundidas |
+| II — semântica primeiro | nenhuma ontologia modelada; os esquemas exigem classificação ontológica e reciprocidade (FR-076, FR-080) para que as distinções não negociáveis não possam ser fundidas. **O YAML permanece modelo semântico, não descrição de banco**: ADR-0007 rejeita geração de código justamente porque um gerador exigiria anotações de índice e chave, e isso o transformaria em esquema de persistência |
 | III — proveniência | FR-073 e FR-074 exigem proveniência em todo arquivo, com vocabulário fechado, e separam proveniência **do conhecimento** da proveniência **de dado integrado** |
 | IV — nenhuma métrica sem necessidade de informação | FR-077 exige que toda medida declare a necessidade que responde. Achado do checklist `semantics.md`, CHK008 — era violação constitucional |
 | V — evidência antes de conclusão | matriz requisito→evidência obrigatória; SC-021 exige provar impedindo o carregamento de um esquema por vez, nove casos |
@@ -60,8 +64,9 @@ respectivamente, OTP, OTP e uma dependência que já vem com `yaml_elixir`.
 | VII — idempotência | validação e compilação são funções puras do conteúdo do disco: rodar duas vezes produz saída idêntica byte a byte (FR-091, SC-023) |
 | VIII — base de conhecimento como artefato | é o objeto da feature |
 
-Nenhuma decisão desta feature exige ADR além das duas já escritas. Nada da lista de tecnologias
-proibidas é introduzido.
+As decisões desta feature estão em **três** ADRs: 0005 (biblioteca e portão de tokens), 0006
+(carregamento) e 0007 (o YAML é normativo, e a implementação é derivada dele). Nada da lista de
+tecnologias proibidas é introduzido, e nenhum gerador de código existe.
 
 ## Project Structure
 
@@ -79,7 +84,7 @@ priv/knowledge_base/
                                    AUSENTE da base compilada (FR-044, FR-067)
 
 lib/the_band/knowledge/
-├── knowledge.ex                   API pública do módulo
+├── knowledge.ex                   API pública — T123; nenhum acesso externo aos submódulos
 ├── manifest.ex                    FR-002 a FR-006, FR-088
 ├── token_gate.ex                  PASSAGEM 1 — âncora, chave duplicada, tabulação, multi-doc
 ├── loader.ex                      PASSAGEM 2 — read_all_from_string, um documento
@@ -112,7 +117,7 @@ Ordem por dependência, não por prioridade declarada. Cada bloco é entregável
 | # | Bloco | Requisitos | Fecha |
 |---|---|---|---|
 | 1 | Portão de tokens | FR-010, FR-011, FR-018, FR-071, FR-072, FR-092 | R6 e R7 — a defesa contra a bomba e contra a corrupção silenciosa |
-| 2 | Manifesto e esquemas | FR-001 a FR-006, FR-055 a FR-057, FR-075 a FR-085, FR-088 | as obrigações de conteúdo, sem as quais nove esquemas vazios satisfariam FR-005 |
+| 2 | Manifesto e esquemas | FR-001 a FR-006, FR-055 a FR-057, FR-075 a FR-085, FR-088, **FR-093 a FR-098** | as obrigações de conteúdo. Sem elas nove esquemas vazios satisfariam FR-005, **e a implementação derivada do YAML teria de inventar os campos** |
 | 3 | Validação estrita e `knowledge.validate` | FR-007 a FR-017, FR-051 a FR-054, FR-058 a FR-061, FR-073, FR-074, FR-089 a FR-091 | US1 |
 | 4 | Varredura de segredo e exceções | FR-024, FR-025, FR-062 a FR-065 | proibição de segredo em base pública |
 | 5 | Grafo e `knowledge.graph` | FR-019 a FR-023, FR-082 a FR-084, FR-086 | US2 |
@@ -134,6 +139,7 @@ Um Pull Request por bloco ou por grupo coeso de blocos, como na feature 001. Nun
 | **Âncoras proibidas** custam reuso declarativo | Aceito. R6 mediu 814 bytes matando o processo, e R5 mediu âncora em fluxo produzindo dado errado. O recurso é perigoso **e** defeituoso |
 | Sem linha e coluna para byte inválido (R9) | Limitação registrada em ADR-0005, não contornada. A mensagem nomeia arquivo e razão |
 | Duplicação semântica não é mecanizável | Limitação aceita e registrada em Assumptions da especificação. Achado CHK024 |
+| **O YAML pode não bastar para implementar.** Se um esquema esquecer um campo que a persistência exige, quem implementa inventa | T130 revisa os nove esquemas contra essa pergunta, esquema por esquema. A rede definitiva é o teste de conformidade da feature 003 (ADR-0007) |
 | Orçamento de dez minutos com oito verificações | R11 mediu 1,36 s para cinco mil arquivos. A análise de YAML não é o gargalo por uma ordem de grandeza. Medir o total de novo ao fechar o bloco 10 |
 
 ## O que este plano deliberadamente **não** faz
@@ -153,4 +159,5 @@ Um Pull Request por bloco ou por grupo coeso de blocos, como na feature 001. Nun
 | Duas passagens de análise por arquivo | R6: sem o portão, 814 bytes derrubam a verificação obrigatória. R11: custo de 0,27 ms/arquivo contra orçamento de dez minutos. A alternativa não existe — nenhuma biblioteca oferece limite de nós |
 | Acoplamento a interface interna de `yamerl` | É o único lugar que expõe âncora, apelido e chave duplicada com posição. `yaml_elixir` não expõe. Coberto por teste que reprova se o acoplamento quebrar |
 | Recusar arranque com YAML inválido | FR-028 proíbe representação parcial. Degradar seria servir um modelo semântico que mente |
+| A mesma informação escrita duas vezes — no YAML e no schema Ecto | ADR-0007. O preço de manter julgamento humano sobre índice, chave e estratégia de migração. A conferência da feature 003 garante que a duplicação não vire divergência |
 | Validação escrita à mão em vez de biblioteca | Princípio VI. Vocabulário fechado, reciprocidade, direções de dependência e correspondência nos dois sentidos seriam escritos à mão de qualquer forma; a biblioteca cobriria só a parte fácil e acrescentaria dependência |

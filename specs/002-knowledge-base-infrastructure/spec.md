@@ -306,7 +306,7 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 | Caso | Resolução |
 |---|---|
 | Mensagem de erro para arquivo com centenas de violações | FR-015 — todas relatadas; parar na primeira transformaria uma correção em muitas rodadas |
-| Base com muitos milhares de arquivos: cabe no orçamento de tempo? | **Aberto** — SC-012 fixa o orçamento; o número de arquivos que ele suporta é medição do plano, não decisão da especificação |
+| Base com muitos milhares de arquivos: cabe no orçamento de tempo? | **Medido em R11**: 5.000 arquivos em 1.360 ms, contra orçamento de dez minutos. Com um conceito por arquivo (FR-098), a base cheia das doze ontologias fica na ordem de 1.400 arquivos |
 | Cadeia de dependências muito profunda, ou grafo muito denso | **Aberto** — mesma razão |
 
 **Segredo**
@@ -411,9 +411,12 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **FR-091**: A saída de cada tarefa MUST ser determinística e ordenada, para que a evidência de
   duas execuções sobre a mesma base seja comparável. Saída em ordem variável faz a matriz de
   evidência registrar ruído como se fosse mudança.
-- **FR-092**: A validação MUST recusar arquivo cujo processamento exceda um limite declarado de
-  tempo ou de tamanho. Arquivo que faz a verificação girar sem terminar bloqueia a verificação
-  obrigatória tanto quanto um que esgota memória, e FR-018 só cobre memória.
+- **FR-092**: A validação MUST recusar arquivo maior que **256 KiB** ou cujo processamento exceda
+  **2 segundos**. Arquivo que faz a verificação girar sem terminar bloqueia a verificação obrigatória
+  tanto quanto um que esgota memória, e FR-018 só cobre memória. Os valores vêm da medição de R11 — o
+  arquivo realista tem 766 bytes e leva 0,27 ms, então o teto é cerca de 340 vezes o tamanho e 7.400
+  vezes o tempo do conteúdo legítimo. A bomba de R6 tem 814 bytes e é recusada **antes** pelo portão
+  de tokens: tamanho pequeno MUST NOT ser lido como processamento curto.
 - **FR-018**: A validação MUST ser resistente a arquivo cuja expansão consuma memória de
   forma descontrolada, recusando-o em vez de esgotar o processo.
 - **FR-071**: Um arquivo MUST conter exatamente um documento, com um mapeamento na raiz.
@@ -461,6 +464,35 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **FR-081**: O esquema de relação MUST exigir a declaração da natureza temporal da relação. A
   constituição distingue evento de objeto e processo planejado de processo executado, e relação sem
   natureza temporal declarada não permite manter a distinção.
+
+**Suficiência para implementar — o YAML define tipos e cardinalidades**
+
+Registrado em [ADR-0007](../../docs/adr/0007-yaml-normativo-e-conformidade-verificada.md). A
+implementação dos módulos ontológicos é **derivada** do YAML. O que o YAML não disser, quem implementa
+inventa — e inventar requisito é o que o princípio I proíbe.
+
+- **FR-093**: O esquema de conceito MUST exigir a lista de atributos, cada um com **nome, tipo e
+  obrigatoriedade**. Conceito sem atributos declarados MUST reprovar. Sem esta lista, a implementação
+  não tem o que implementar e a conferência da feature 003 não tem o que conferir.
+- **FR-094**: O vocabulário de tipo de atributo MUST ser fechado, e cada valor MUST mapear sem
+  ambiguidade para um tipo de persistência. Um tipo genérico como "número" MUST NOT ser aceito:
+  inteiro, decimal e ponto flutuante têm consequências diferentes em banco, e escolher entre eles por
+  conta própria é inventar requisito.
+- **FR-095**: Relação MUST declarar cardinalidade, na notação única de FR-079. Cardinalidade ausente
+  MUST reprovar — a diferença entre muitos-para-um e muitos-para-muitos é a diferença entre uma coluna
+  e uma tabela de junção.
+- **FR-096**: Axioma e restrição MUST ser declarados dentro do próprio conceito ou relação, com
+  identificador estável e enunciado nos dois idiomas exigidos. **Nenhuma linguagem formal de expressão
+  é construída nesta feature**, preservando a decisão de Q3. A assimetria é deliberada: axioma
+  declarado como enunciado identificado pode ser formalizado por feature futura; axioma **não
+  declarado** não pode, porque não existe.
+- **FR-097**: O conjunto formado por atributos, tipos, obrigatoriedade, cardinalidades e axiomas MUST
+  ser suficiente para implementar a persistência do conceito **sem consultar outra fonte**. Verificado
+  na revisão de cada esquema, e exercitado pelo conjunto reservado de exemplos.
+- **FR-098**: Cada conceito, cada relação e cada pergunta de competência MUST ocupar **um arquivo
+  próprio**. Um arquivo com muitos conceitos torna a comparação semântica inútil — "arquivo alterado"
+  é a diferença textual que FR-036 existe para substituir — e degrada a mensagem de FR-020, que
+  apontaria um arquivo com dezenas de conceitos dentro.
 
 **Escopo do que é referência a identificador**
 
@@ -826,6 +858,9 @@ está dito.
 | Q6 | Rótulo e definição exigem quais idiomas? | **Português do Brasil e inglês, os dois obrigatórios** | FR-058 a FR-061 |
 | Q7 | Como se registra exceção à detecção de segredo? | **No próprio arquivo, por campo, com justificativa** — sem exceção por arquivo, diretório, padrão ou global | FR-062 a FR-065 |
 | Q8 | Arquivo de conhecimento declara estado de maturidade? | **Sim, nos nove tipos**: proposto, ativo, obsoleto. Só ativo entra na base compilada | FR-066 a FR-070 |
+| Q9 | Qual é a relação entre o YAML e os schemas do banco? | **O YAML é a especificação normativa e define tipos e cardinalidades.** A implementação é derivada dele; a conformidade é conferida por teste na feature 003. Sem gerador de código | FR-093 a FR-097, ADR-0007 |
+| Q10 | Um conceito por arquivo, ou muitos? | **Um por arquivo** — senão a comparação semântica vira diferença textual | FR-098 |
+| Q11 | Qual o limite de tamanho e tempo por arquivo? | **256 KiB e 2 segundos**, derivados da medição de R11 | FR-092 |
 
 ### Registro detalhado: inventário, não roteiro
 
@@ -997,6 +1032,51 @@ sem caminho de descontinuação.
 **Rejeitado**: sem estado algum. Acrescentá-lo depois seria mudança de forma nos nove esquemas e
 em todo arquivo da base, simultaneamente.
 
+### Registro detalhado: o YAML manda, e por isso tem de ser suficiente
+
+**Decidido**: o YAML é a especificação normativa do modelo de domínio. Ele **define os tipos e as
+cardinalidades**. Os schemas Ecto, as migrações e o código dos módulos ontológicos são implementados a
+partir dele, e um teste de conformidade reprova quando os dois divergirem.
+
+**A consequência que muda esta feature**: se a implementação é derivada do YAML, o que o YAML não
+disser será inventado. Por isso o vocabulário de tipo é fechado e mapeia sem ambiguidade para
+persistência (FR-094), a cardinalidade é obrigatória (FR-095), e o conjunto declarado tem de bastar
+para implementar sem consultar outra fonte (FR-097).
+
+**A lacuna que a decisão expôs**: até aqui **nenhum requisito exigia que um conceito declarasse seus
+atributos**. FR-076 pedia classificação ontológica e especialização, e nada mais. A conferência da
+feature 003 não teria contra o que conferir, e quem implementasse teria de inventar os campos. É a
+classe de defeito desta feature invertida no tempo — não "verificação sem sujeito", mas "sujeito sem os
+dados que a verificação futura exige". Fechada por FR-093.
+
+**Rejeitado**: gerar schemas e migrações mecanicamente. Migração gerada não é migração revisada, e
+renomear coluna com dados dentro depende do que já está no banco, que o YAML não sabe. Código gerado e
+versionado volta a ser duas fontes de verdade, pior, porque parece derivado. Índice e chave composta são
+julgamento de engenharia, não consequência da ontologia. Detalhado em ADR-0007.
+
+**Rejeitado**: só consulta em execução, sem conferência. É o que esta especificação dizia
+implicitamente e o que o documento de referência diz literalmente. O custo é o YAML divergir do banco em
+silêncio, e a base semântica passar a mentir sobre o sistema que ela descreve.
+
+**Preservado**: nenhuma linguagem formal de regra é construída aqui. Axioma é enunciado estruturado e
+identificado, que quem implementa lê e traduz. A decisão de Q3 continua valendo.
+
+### Registro detalhado: um conceito por arquivo
+
+**Decidido**: um conceito, uma relação ou uma pergunta de competência por arquivo.
+
+**Razão**: `knowledge.diff` relata mudança por arquivo (FR-036, FR-037). Com muitos conceitos por
+arquivo, "arquivo alterado" é exatamente a diferença textual que a comparação semântica existe para
+substituir, e a mensagem de FR-020 apontaria um arquivo com dezenas de conceitos dentro. Adicionar,
+remover ou renomear um conceito passa a ser visível na própria lista de arquivos mudados.
+
+**Custo aceito**: a base cheia das doze ontologias fica na ordem de 1.400 arquivos. R11 mediu 5.000
+arquivos em 1.360 ms — o custo não existe na prática.
+
+**Achado por pergunta, não por checklist.** Nem o `clarify` nem os dois checklists de qualidade
+perceberam que FR-036, FR-037 e FR-020 assumiam em silêncio um conceito por arquivo, sem que nada
+exigisse.
+
 ## Out of Scope
 
 Registrado explicitamente porque a fronteira desta feature é estreita e fácil de atravessar
@@ -1018,6 +1098,13 @@ sem perceber.
 - Extensão de conhecimento por Tenant.
 - Qualquer alteração no isolamento por Tenant, na verificação de saúde ou no trabalho
   assíncrono entregues pela feature 001.
+- **O teste de conformidade entre YAML e schema Ecto.** A ADR-0007 o decide e ele **não tem sujeito
+  aqui**: a feature 002 não implementa módulo ontológico nem tabela alguma, então não há par para
+  comparar. Pertence à feature 003. O que a 002 faz é **exigir no YAML** o que a conferência precisará
+  — atributos com tipo e obrigatoriedade, cardinalidade e axiomas (FR-093 a FR-097). Sem isso a 003
+  não teria contra o que conferir.
+- Qualquer gerador de código, de schema ou de migração. Rejeitado em ADR-0007.
+- Linguagem formal de expressão de axioma ou de regra. Preservado de Q3.
 - Interface de usuário para a base de conhecimento.
 - **Contrato OpenAPI.** O projeto passou a exigir especificação OpenAPI para **todo** serviço HTTP
   exposto, sem exceção — ver [CLAUDE.md](../../CLAUDE.md). A regra **não produz requisito nesta

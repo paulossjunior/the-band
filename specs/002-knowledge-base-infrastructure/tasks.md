@@ -15,7 +15,10 @@
 - `[P]` = pode rodar em paralelo com as tarefas vizinhas marcadas igual.
 - **Tarefa de mutação** = quebra o código de propósito e confirma que o teste pega. Na feature 001
   isso encontrou dois testes que passavam pelo motivo errado. Não é opcional.
-- Cada tarefa nomeia o requisito que fecha. Tarefa sem requisito é escopo inventado.
+- Cada tarefa serve a **um requisito**, **ou** verifica outra tarefa, **ou** cumpre obrigação da
+  constituição — e cita qual. Tarefa que não serve a nenhum dos três é escopo inventado. A primeira
+  versão desta regra exigia requisito de **toda** tarefa, e o `analyze` mostrou que ela condenava nove
+  tarefas legítimas: mutação, criação de módulo e convergência.
 - **Nenhuma tarefa é marcada concluída sem evidência executada** — princípio V.
 
 ## Agrupamento em propostas de mudança
@@ -32,7 +35,7 @@ Uma proposta por grupo. Nunca misturar grupos.
 | F | 6, 7 | exemplos, compilação, arranque — **US4** | C, E |
 | G | 8 | `knowledge.test` — **US5** | E, F |
 | H | 9 | `knowledge.diff` — **US6** | C |
-| I | 10, 11 | verificações obrigatórias — **US3** — e convergência | C, E, G |
+| I | 10, 11 | verificações obrigatórias — **US3** — e convergência | C, E, **F**, G |
 
 ---
 
@@ -76,9 +79,9 @@ Primeiro porque é a defesa contra o que R6 mediu: 814 bytes matam o processo.
 - [ ] **T013** Ignorar arquivo cujo nome começa por ponto, **relatando quantos** foram ignorados.
   Teste que a contagem aparece na saída — exclusão não contada é indistinguível de arquivo não
   encontrado. [FR-072, FR-013]
-- [ ] **T014** Aplicar limite declarado de tempo e de tamanho por arquivo, e recusar quem exceder.
-  FR-018 cobre memória; arquivo que gira sem terminar bloqueia a verificação do mesmo jeito.
-  [FR-092]
+- [ ] **T014** Recusar arquivo maior que **256 KiB** ou cujo processamento exceda **2 segundos**.
+  Valores derivados de R11: o arquivo realista tem 766 bytes e leva 0,27 ms. FR-018 cobre memória;
+  arquivo que gira sem terminar bloqueia a verificação do mesmo jeito. [FR-092]
 - [ ] **T015** Teste de integração com o **arquivo de bomba de 814 bytes de R6**: recusado pelo
   portão em milissegundos, sem construir termo. Medir o tempo e o tamanho do termo, e registrar.
   [FR-018, SC-002]
@@ -100,7 +103,10 @@ Primeiro porque é a defesa contra o que R6 mediu: 814 bytes matam o processo.
 - [ ] **T020** Recusar manifesto que declare validação não estrita ou que omita rejeição de campo
   desconhecido. Teste que o próprio manifesto é recusado, não que a validação é afrouxada. [FR-004]
 - [ ] **T021** Verificar a correspondência manifesto↔conteúdo nos **dois** sentidos: ontologia
-  declarada sem conteúdo reprova, conteúdo sobre ontologia não declarada reprova. [FR-006]
+  declarada sem conteúdo reprova, conteúdo sobre ontologia não declarada reprova. **Exercitar por
+  fixture, não pela base real**: entre o PR B e o PR F a base não tem ontologia de conteúdo alguma, e
+  a verificação passaria **vazia** — a classe de defeito que esta feature existe para fechar, e que
+  FR-016 proíbe para a contagem de arquivos. [FR-006]
 - [ ] **T022** Implementar FR-086: "conteúdo sobre uma ontologia" é arquivo que declara aquela
   ontologia como **sua**. Mapeamento que apenas aponta **não** satisfaz a correspondência. Teste dos
   dois casos. [FR-086]
@@ -120,6 +126,21 @@ Primeiro porque é a defesa contra o que R6 mediu: 814 bytes matam o processo.
   limitações, caminho do identificador externo e **chave natural**. Sem chave natural não há
   idempotência de escrita. [FR-078]
 - [ ] **T029** Esquema de relação: exigir natureza temporal declarada. [FR-081]
+- [ ] **T126** Esquema de conceito: exigir a lista de atributos, cada um com **nome, tipo e
+  obrigatoriedade**. Conceito sem atributos reprova. Sem esta lista quem implementa inventa os campos e
+  a conferência da feature 003 não tem o que conferir. [FR-093, ADR-0007]
+- [ ] **T127** Vocabulário de tipo de atributo **fechado**, cada valor mapeando sem ambiguidade para um
+  tipo de persistência. Recusar tipo genérico como "número": inteiro, decimal e ponto flutuante têm
+  consequências diferentes em banco, e escolher entre eles é inventar requisito. [FR-094]
+- [ ] **T128** Esquema de relação: cardinalidade **obrigatória**, na notação única de FR-079.
+  Cardinalidade ausente reprova — é a diferença entre uma coluna e uma tabela de junção. [FR-095]
+- [ ] **T129** Axioma e restrição declarados dentro do conceito ou da relação, com identificador estável
+  e enunciado nos dois idiomas. **Nenhuma linguagem formal de expressão**, preservando Q3. [FR-096]
+- [ ] **T130** Revisar cada um dos nove esquemas contra a pergunta: o que ele exige **basta para
+  implementar a persistência sem consultar outra fonte?** Registrar a conferência esquema por esquema.
+  [FR-097]
+- [ ] **T131** Impor um conceito, uma relação ou uma pergunta de competência **por arquivo**. Recusar
+  arquivo com mais de um. [FR-098]
 - [ ] **T030** Notação única de cardinalidade em toda a base; duas notações para a mesma afirmação
   reprovam, ainda que ambas sejam legíveis. [FR-079]
 - [ ] **T031** Restrição de conceito declarada **dentro** do conceito, nunca referenciada por
@@ -139,11 +160,19 @@ Primeiro porque é a defesa contra o que R6 mediu: 814 bytes matam o processo.
 
 ## Fase 3 — Validação estrita e `knowledge.validate` (PR C, US1)
 
+- [ ] **T123** Escrever `TheBand.Knowledge` como **API pública** do módulo, delegando aos submódulos.
+  Nenhum código fora de `TheBand.Knowledge.*` alcança `Validator`, `Graph`, `Compiled` ou `Loader`
+  direto. Teste que reprova acesso externo aos submódulos — é o padrão que `CLAUDE.md` exige e que as
+  tarefas não cobriam. Achado C1 do `analyze`. [CLAUDE.md, API pública dos módulos]
+
 - [ ] **T037** Escrever `TheBand.Knowledge.Loader` com `YamlElixir.read_all_from_string/2`, exigindo
   lista de tamanho exatamente 1. **Nunca** `read_from_string/2`: R8 mediu que ele devolve só o último
   documento e devolve `%{}` para arquivo vazio. [FR-071, ADR-0005]
 - [ ] **T038** Teste que trava a escolha: uma asserção que reprova se `read_from_string/2` aparecer
   no código do módulo. Sem isso, alguém "simplifica" e reintroduz o descarte silencioso.
+- [ ] **T124** Escrever `TheBand.Knowledge.Schema`, que carrega e representa os nove esquemas, e
+  `TheBand.Knowledge.Validator`, que aplica um esquema a um arquivo. Nomeados no plano e sem tarefa até
+  o `analyze` apontar. Achado C2. [FR-005, FR-075]
 - [ ] **T039** Exigir as cinco declarações — esquema, versão, identificador estável, dependências,
   proveniência. Cinco casos de omissão, cinco recusas. [FR-007, SC-003]
 - [ ] **T040** Tratar campo obrigatório com valor vazio ou nulo como **violação**, não como ausência,
@@ -303,6 +332,8 @@ Primeiro porque é a defesa contra o que R6 mediu: 814 bytes matam o processo.
 
 ## Fase 9 — `knowledge.diff` (PR H, US6)
 
+- [ ] **T125** Escrever `TheBand.Knowledge.Diff`. Nomeado no plano e sem tarefa até o `analyze`
+  apontar. Achado C2. [FR-036]
 - [ ] **T099** Reconstruir a base em **duas referências do histórico** e comparar. Sem artefato
   gerado e versionado que descreva o estado semântico. [FR-040]
 - [ ] **T100** Relatar adição, remoção, renomeação e alteração de conteúdo. [FR-036]
