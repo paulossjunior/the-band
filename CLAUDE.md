@@ -228,6 +228,14 @@ Necessidade → Discovery → Feature Request
 → Pull Request → revisão independente → merge
 ```
 
+O passo `aprovação` do ciclo foi **delegado** por instrução permanente da pessoa mantenedora: o
+agente roda o ciclo ponta a ponta e interrompe apenas pelos motivos de uma lista fechada de onze
+itens. A lista, as condições de incorporação e as armadilhas de execução já pagas neste
+repositório estão em [AGENTS.md](AGENTS.md) — é o único lugar onde vivem, de propósito.
+
+A delegação não dispensa a aprovação: é aprovação concedida uma vez. Enquanto a constituição não
+registrar a delegação por emenda, o princípio I prevalece sobre o `AGENTS.md` em caso de disputa.
+
 Branches: `feature|fix|refactor|docs|test|chore/<issue>-<descricao>`
 
 Commits: `tipo(escopo): descrição imperativa` — ex.

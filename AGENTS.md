@@ -1,3 +1,143 @@
+# AGENTS.md — The Band
+
+Autoridade, em ordem: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) →
+[`CLAUDE.md`](CLAUDE.md) → este arquivo. Em conflito, a de cima prevalece. Este arquivo **não
+revoga** nenhuma obrigação das outras duas.
+
+Este arquivo contém duas coisas que não estão em nenhum outro lugar: **o contrato de autonomia**
+e **as armadilhas de execução aprendidas rodando**. Arquitetura, ontologias, roadmap e portões
+estão em `CLAUDE.md` — não são repetidos aqui, porque duas cópias divergem.
+
+---
+
+## Contrato de autonomia do ciclo Spec Kit
+
+A pessoa mantenedora delegou a execução do ciclo. Rode ponta a ponta e só interrompa pelos
+motivos da lista fechada abaixo. "Dúvida" não é sensação — é um item daquela lista.
+
+**Limitação registrada, não escondida**: a constituição, no princípio I, exige `spec.md`
+**aprovado**, `checklist` **aprovado**, `plan.md` **aprovado** e `tasks.md` **aprovado**, e a
+seção Development Workflow tem um passo explícito de `aprovação`. Esta delegação é tratada como
+aprovação permanente concedida uma vez, e não como dispensa da aprovação. Enquanto a constituição
+não registrar a delegação por emenda, ela prevalece sobre este arquivo em caso de disputa.
+
+### Autorizado sem perguntar
+
+- Rodar `/speckit-specify`, `/speckit-clarify`, `/speckit-checklist`, `/speckit-plan`,
+  `/speckit-tasks`, `/speckit-taskstoissues`, `/speckit-analyze`, `/speckit-implement`,
+  `/speckit-converge` na ordem que a constituição exige.
+- Criar branch, commits, Issues e Pull Request.
+- No `clarify`, escolher a opção recomendada quando ela for defensável — **registrando o que foi
+  rejeitado e por quê**, no próprio `spec.md`. Uma decisão sem o descartado registrado será
+  repetida como experimento por quem vier depois.
+- Escrever `spec.md`, `plan.md`, `research.md`, `tasks.md`, `data-model.md`, `contracts/`,
+  `quickstart.md`, `evidence.md`, ADRs, testes, migrações, YAMLs e documentação.
+- Rodar os portões, coletar evidência, corrigir o que os portões reprovarem.
+- Abrir o PR e deixar as verificações obrigatórias do servidor decidirem.
+
+### Pare e pergunte — lista fechada
+
+Fora desta lista, decida e siga. Dentro dela, pare, apresente as alternativas com o custo de
+cada uma, e espere.
+
+1. **Decisão que exige ADR e que o plano não previu** — arquitetura, stack, estratégia
+   multitenant, organização por ontologias, YAML como base de conhecimento, contrato público.
+2. **Dependência nova** que não tenha justificativa já escrita no `plan.md` da feature.
+3. **Constituição, `Mantenedor único`, proteção da linha principal, verificações obrigatórias de
+   status, ou visibilidade do repositório.** Nunca altere nada disso por conta própria.
+4. **Portão que só passa enfraquecendo a verificação** — remover teste, afrouxar asserção,
+   excluir arquivo de uma checagem, aumentar tolerância. Nunca faça; pare e pergunte.
+5. **Achado `CRITICAL` ou `HIGH` do `analyze`.** Bloqueia por si.
+6. **Conflito semântico** — duas ontologias reivindicando o mesmo conceito, mapeamento que
+   equipara conceitos por semelhança de nome, ou violação de uma das distinções não negociáveis
+   da constituição. O risco semântico bloqueia feature.
+7. **Qualquer credencial, token, chave ou `.env` real** que possa entrar no repositório, ou
+   suspeita de que já esteja no histórico. O repositório é **público**: isto é incidente, não
+   achado a corrigir depois. Nunca prove um detector de segredo versionando credencial falsa —
+   prove localmente.
+8. **Critério de sucesso que não pode ser provado mecanicamente.** Não marque, não estime, não
+   substitua por leitura de configuração. Declare não provado e diga o que falta — foi o que
+   aconteceu com SC-014 da feature 001, e marcá-lo teria sido mentira registrada.
+9. **Requisito descoberto durante a implementação** que não está no `spec.md`. Atualize o Spec
+   Kit antes do código, e se o requisito muda escopo, pergunte.
+10. **Duas opções defensáveis** em que a escolha muda **o que se constrói**, sem uma claramente
+    melhor. Se a escolha só muda **como** se constrói, decida.
+11. **Ação destrutiva ou irreversível** — reescrita de histórico, `push --force`, remover branch
+    não incorporada, apagar dado, `ecto.drop` fora de ambiente de teste.
+
+### Incorporação
+
+Abra o PR e **relate**. A incorporação é autorizada apenas quando **todas** as condições abaixo
+forem verdadeiras, e o relato precisa mostrar cada uma:
+
+- todas as verificações obrigatórias de status **aprovadas** — nenhuma pendente, nenhuma ausente;
+- `analyze` sem achado `CRITICAL` nem `HIGH`;
+- revisão independente por outro agente executada, com o resultado anexado ao PR — e registrada
+  como **não equivalente** a revisão humana;
+- `evidence.md` cobrindo requisito por requisito, com o que não foi provado declarado como não
+  provado;
+- comentários abertos resolvidos.
+
+Faltando qualquer uma, **não incorpore**: relate o que falta. Nunca incorpore para desbloquear.
+
+---
+
+## Armadilhas de execução deste repositório
+
+Cada uma custou tempo de verdade. Nenhuma foi encontrada lendo código.
+
+**Ferramenta que sai com código 0 sem ter feito o trabalho é a classe de defeito número um.**
+`mix credo` **não** compila o projeto antes de rodar; sem a compilação as checagens próprias não
+carregam, o Credo imprime `Ignoring an undefined check` e **sai com 0**. Por isso `mix gates`
+tem ordem fixa, e o CI reprova se aquela mensagem aparecer. Regra geral: confira que a ferramenta
+**verificou algo** — contagem de arquivos, de checagens, de casos — não só o código de saída.
+
+**Rode a aplicação, não só os testes.** A correlação invisível nos logs de desenvolvimento passou
+por 150 testes e só apareceu subindo o servidor.
+
+**Teste que passa pelo motivo errado.** Dois testes passavam porque o Ecto levanta
+`ArgumentError` em `== ^nil` — a mesma classe que a nossa própria verificação levanta. Asserte
+**pela mensagem**, não pela classe da exceção. E quebre o código de propósito para confirmar que o
+teste pega: isso encontrou dois testes mais fracos do que o declarado.
+
+**Investigue antes de reportar falha.** Quatro alarmes falsos na feature 001, nenhum defeito de
+código: `zsh` não divide palavras em parâmetro não citado (duas vezes); daemon do Docker parado;
+fila de desenvolvimento do Oban disputando trabalhos com o script de evidência; acento grave
+interpretado como comando ao montar corpo de PR. Reproduza, isole, e só então reporte.
+
+**`@opaque` e `@doc false` são documentação.** Não impedem construção em execução. Fronteira que
+Elixir não impõe precisa de checagem estática — e a checagem precisa cobrir a forma **idiomática**,
+não só a literal: a nossa deixava passar `Repo.all()` com alias, que é como quase todo mundo
+escreve.
+
+**Pesquise exercitando o caminho real.** Concluímos que a migração v12 do Oban bastava depois de
+testá-la em configuração reduzida; com plugins ativos, o arranque exigia v14. Configuração
+reduzida não é evidência.
+
+**Não crie pasta vazia antecipadamente.** A constituição proíbe, e há teste que reprova.
+
+---
+
+## Disciplina de evidência
+
+Aprovações humanas exigidas são **zero**. Ninguém vai reler o diff. Então:
+
+- todo requisito verificável tem verificação automatizada; o que só uma pessoa poderia conferir
+  vira teste, checagem estática ou verificação de status;
+- o PR declara **requisito por requisito** qual evidência executada o cobre;
+- evidência é saída de execução colada, não afirmação de que rodou;
+- o que não foi provado é declarado não provado, com o que falta para prová-lo;
+- alarme falso próprio é registrado com a causa, não apagado — a causa se reaproveita.
+
+## Cadência de relato
+
+A pessoa mantenedora não está acompanhando passo a passo. Relate nas fronteiras de fase — spec,
+plan, tasks, cada PR, convergência — não por arquivo. Cada relato diz: o que foi decidido, o que
+foi provado, o que ficou pendente e por quê. Prefira a decisão e o custo aceito ao inventário de
+arquivos tocados.
+
+---
+
 This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
