@@ -83,7 +83,18 @@ consciente, não como item a corrigir.
 
 ### Pronto para a próxima fase
 
-Nenhum item reprovado. A especificação está pronta para `/speckit-checklist` e `/speckit-plan`.
+Nenhum item reprovado neste checklist.
+
+**Correção importante, registrada em 2026-08-05**: este checklist mede a **qualidade de redação** da
+especificação — clareza, mensurabilidade, ausência de marcador pendente. Ele passou 16/16 **e mesmo
+assim** os checklists de domínio [`semantics.md`](semantics.md) e [`validation.md`](validation.md)
+encontraram **33 achados**, dos quais uma violação constitucional (medida sem necessidade de
+informação), uma contradição interna (manifesto submetido a exigências sem sentido para ele) e a
+classe de defeito nº 1 da feature 001 transposta (validação que aprova sem confirmar que os
+esquemas carregaram). A especificação foi de 72 para 92 requisitos por causa deles.
+
+Fica registrado que **passar este checklist não é evidência de que os requisitos estão certos** — só
+de que estão bem escritos. Quem ler só este arquivo e concluir "pronto" repetirá o erro.
 
 O plano precisa resolver duas decisões que esta especificação deliberadamente não resolve, e
 ambas exigem ADR: a biblioteca de interpretação de YAML (FR-048, FR-049) e a estratégia de

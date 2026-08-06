@@ -340,6 +340,17 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
   conteúdo correspondente MUST reprovar, e conteúdo sobre ontologia não declarada MUST
   reprovar. O manifesto MUST NOT registrar intenção futura — o roteiro das ontologias vive na
   constituição e no guia operacional.
+- **FR-086**: Para FR-006, "conteúdo sobre uma ontologia" MUST significar arquivo que declara
+  aquela ontologia como **sua**. Arquivo que apenas aponta para uma ontologia — um mapeamento, por
+  exemplo — MUST NOT bastar para satisfazer a correspondência; a ontologia apontada precisa estar
+  no manifesto por força de FR-023, que é requisito diferente e com outra razão.
+- **FR-088**: As exigências que se aplicam ao **manifesto** MUST ser declaradas explicitamente, e
+  MUST NOT ser inferidas de "as mesmas exigências". O manifesto declara versão, política de
+  validação, idiomas exigidos, ontologias presentes e exigência de proveniência. Ele MUST NOT ser
+  obrigado a declarar identificador estável, dependências, proveniência própria, estado de
+  maturidade nem rótulo bilíngue — um manifesto "proposto" ou "obsoleto" é contradição, e um
+  manifesto com rótulo em dois idiomas é campo cerimonial. FR-003 MUST ser lido como "validado com
+  o mesmo **rigor**", nunca como "validado contra a mesma **lista de campos**".
 
 **Versão do esquema de validação**
 
@@ -363,7 +374,8 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **FR-008**: A validação MUST recusar qualquer campo não definido pelo esquema, em qualquer
   nível de aninhamento.
 - **FR-009**: A validação MUST recusar arquivo que não seja um documento YAML válido, e MUST
-  indicar a posição do erro. Erro de sintaxe MUST NOT ser tratado como arquivo vazio.
+  indicar **linha e coluna** do erro. "Posição" sem definição não é verificável. Erro de sintaxe
+  MUST NOT ser tratado como arquivo vazio.
 - **FR-010**: A validação MUST recusar chave duplicada no mesmo mapeamento, ainda que o
   interpretador de YAML a aceite silenciosamente.
 - **FR-011**: A validação MUST aplicar a verificação de campo desconhecido **após** a
@@ -379,10 +391,28 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
   recusar a que não considerar. Uma extensão silenciosamente ignorada é proibida.
 - **FR-015**: A validação MUST relatar todas as violações encontradas em uma execução, não
   apenas a primeira.
-- **FR-016**: A validação MUST relatar quantos arquivos verificou, e MUST reprovar quando
-  esse número for zero. Aprovação sem ter verificado nada é proibida.
-- **FR-017**: A validação MUST terminar com código de falha quando reprovar, e com código de
-  sucesso apenas quando tiver efetivamente verificado a base e não encontrado violação.
+- **FR-016**: **Cada uma das cinco tarefas** MUST relatar quanto trabalho fez — arquivos
+  verificados, arestas percorridas, perguntas conferidas, arquivos comparados — e MUST reprovar
+  quando esse número for zero. Aprovação sem ter verificado nada é proibida, e não basta que a
+  validação o faça: três das cinco serão verificações obrigatórias de status.
+- **FR-017**: **Cada uma das cinco tarefas** MUST terminar com código de falha quando reprovar, e
+  com código de sucesso apenas quando tiver efetivamente feito o que se propõe e não encontrado
+  violação. Portão cujo código de saída não está especificado não é portão.
+- **FR-089**: Antes de poder aprovar, a validação MUST confirmar que **todos os nove esquemas
+  foram carregados**, e MUST reprovar se algum não carregou. Contar arquivos verificados **não**
+  fecha este caminho: um esquema que falha ao carregar faz os arquivos daquele tipo serem pulados
+  enquanto a contagem permanece maior que zero, e a validação aprova. Esta é a falha da feature 001
+  — checagem que não carrega, ferramenta que sai com código de sucesso — transposta para esta
+  feature na mesma forma e em lugar novo.
+- **FR-090**: MUST NOT existir variável de ambiente, argumento de linha de comando, arquivo de
+  configuração ou campo de manifesto que desligue, afrouxe ou reduza o alcance de qualquer uma das
+  verificações. FR-004 fecha o manifesto; este requisito fecha todo o resto.
+- **FR-091**: A saída de cada tarefa MUST ser determinística e ordenada, para que a evidência de
+  duas execuções sobre a mesma base seja comparável. Saída em ordem variável faz a matriz de
+  evidência registrar ruído como se fosse mudança.
+- **FR-092**: A validação MUST recusar arquivo cujo processamento exceda um limite declarado de
+  tempo ou de tamanho. Arquivo que faz a verificação girar sem terminar bloqueia a verificação
+  obrigatória tanto quanto um que esgota memória, e FR-018 só cobre memória.
 - **FR-018**: A validação MUST ser resistente a arquivo cuja expansão consuma memória de
   forma descontrolada, recusando-o em vez de esgotar o processo.
 - **FR-071**: Um arquivo MUST conter exatamente um documento, com um mapeamento na raiz.
@@ -393,6 +423,58 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
   recusar ligação simbólica que aponte para fora da base; e MUST ignorar arquivo cujo nome comece
   por ponto — relatando **quantos** foram ignorados, porque exclusão que não é contada é
   indistinguível de arquivo que não foi encontrado.
+
+**Proveniência**
+
+- **FR-073**: A proveniência de arquivo de conhecimento MUST declarar o tipo de fonte e, quando o
+  tipo o exigir, o documento ou referência de origem. Esta é a proveniência **do conhecimento**, e
+  é distinta da proveniência de **dado integrado**, que a constituição define no princípio III com
+  sete campos e que pertence às features de coleta. Os dois conjuntos MUST ser declarados
+  separadamente, para que aplicar a lista errada seja impossível em vez de improvável.
+- **FR-074**: O vocabulário de tipo de fonte MUST ser fechado, e valor fora dele MUST reprovar. O
+  vocabulário MUST incluir um valor próprio para conteúdo de exemplo: o conjunto reservado não
+  deriva de fonte alguma, e declará-lo como derivado de ontologia de referência seria proveniência
+  falsa — pior que proveniência ausente, porque passa pela verificação.
+
+**Obrigações de conteúdo de cada esquema**
+
+- **FR-075**: Cada um dos nove esquemas MUST declarar suas próprias obrigações de conteúdo, além
+  das cinco declarações comuns a todo arquivo. "Existe um esquema para cada tipo" MUST NOT ser
+  satisfazível por nove esquemas vazios.
+- **FR-076**: O esquema de conceito MUST exigir classificação ontológica — a categoria que
+  distingue objeto, evento e agente — e MUST permitir declarar o conceito mais geral que ele
+  especializa. Sem a classificação, um conceito válido pode fundir as distinções não negociáveis da
+  constituição, e a validação aprovaria a fusão.
+- **FR-077**: O esquema de medida MUST exigir a declaração da necessidade de informação que a
+  medida responde, e medida sem esse vínculo MUST reprovar. O princípio IV da constituição proíbe
+  medida sem necessidade de informação declarada; sem este requisito a especificação criaria os dois
+  tipos de arquivo e deixaria a ligação entre eles ao critério de quem escreve.
+- **FR-078**: O esquema de mapeamento MUST exigir grau de equivalência, justificativa semântica,
+  limitações declaradas, caminho do identificador externo e chave natural. A chave natural é o que
+  sustenta a idempotência de escrita exigida pelo princípio VII, e mapeamento sem ela MUST reprovar.
+- **FR-079**: A notação de cardinalidade MUST ser única em toda a base. Duas notações para a mesma
+  afirmação MUST reprovar, ainda que ambas sejam legíveis.
+- **FR-080**: Relação declarada dentro de um conceito MUST concordar com a origem e o destino
+  declarados no arquivo da relação. Divergência MUST reprovar — sem isso os dois arquivos afirmam
+  coisas diferentes e os dois passam.
+- **FR-081**: O esquema de relação MUST exigir a declaração da natureza temporal da relação. A
+  constituição distingue evento de objeto e processo planejado de processo executado, e relação sem
+  natureza temporal declarada não permite manter a distinção.
+
+**Escopo do que é referência a identificador**
+
+- **FR-082**: A especificação de cada esquema MUST declarar quais de seus campos são tratados como
+  referência a identificador. Fora dessa lista, nenhum valor MUST ser interpretado como referência.
+  Sem escopo declarado, a verificação de referência pendente não tem limite definido: ou deixa
+  passar, ou acusa nome livre.
+- **FR-083**: Restrição de um conceito MUST ser declarada dentro do próprio conceito, e MUST NOT
+  ser referenciada por identificador de arquivo. Não existe um décimo tipo de arquivo para
+  restrições, e referenciá-la por identificador a tornaria referência pendente — o exemplo de
+  conceito do documento de referência não passaria pela própria validação.
+- **FR-084**: Módulo declarado por uma ontologia MUST ser nome de agrupamento interno, e MUST NOT
+  ser tratado como referência a identificador.
+- **FR-085**: O vocabulário de tipo de resposta esperada de uma pergunta de competência MUST ser
+  fechado.
 
 **Idioma**
 
@@ -471,8 +553,11 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **FR-068**: Arquivo **obsoleto** MUST declarar a versão em que foi descontinuado, a razão, e
   o que o substitui — ou a afirmação explícita de que nada o substitui. Obsoleto sem substituto
   declarado nem afirmação de ausência MUST reprovar.
-- **FR-069**: Referência a identificador de arquivo obsoleto MUST reprovar. Conhecimento em
-  vigor MUST NOT depender de conhecimento descontinuado.
+- **FR-069**: Referência a identificador de arquivo obsoleto, **partindo de conteúdo ativo**, MUST
+  reprovar. Conhecimento em vigor MUST NOT depender de conhecimento descontinuado.
+- **FR-087**: Arquivo obsoleto MUST poder referenciar arquivo obsoleto. Sem esta ressalva,
+  descontinuar um arquivo faria reprovar retroativamente todos os que dele dependiam e já estavam
+  descontinuados — o caminho de descontinuação puniria quem o seguiu.
 - **FR-070**: A comparação entre versões MUST sinalizar a remoção de um arquivo que não tenha
   passado pelo estado obsoleto. O caminho de descontinuação existe para avisar quem depende
   antes de quebrar, e pular esse caminho MUST ficar visível.
@@ -480,8 +565,9 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 **Compilação e disponibilidade em execução**
 
 - **FR-026**: A base MUST ser transformada em uma representação consultável em execução.
-- **FR-027**: Consulta à base em execução MUST NOT provocar leitura de disco a cada
-  requisição.
+- **FR-027**: Consulta à base em execução MUST NOT provocar leitura de disco a cada **consulta**.
+  O termo é consulta, não requisição: esta feature não expõe superfície web alguma, e usar
+  "requisição" faria o requisito parecer condicionado a um caminho de requisição que não existe.
 - **FR-028**: A compilação MUST reprovar quando qualquer arquivo for inválido, e MUST NOT
   produzir representação parcial.
 - **FR-029**: A consulta MUST distinguir "identificador não existe" de "existe e não tem
@@ -575,8 +661,11 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **Declaração de dependência**: Conjunto de ontologias das quais um arquivo depende. Sujeita
   às direções permitidas pela constituição. Lista vazia declarada é diferente de campo
   omitido.
-- **Declaração de proveniência**: Origem do que o arquivo afirma — tipo de fonte, documento
-  ou referência. Obrigatória em todo arquivo.
+- **Declaração de proveniência**: Origem do que o arquivo **afirma** — tipo de fonte, vindo de
+  vocabulário fechado, e documento ou referência quando o tipo o exigir. Obrigatória em todo
+  arquivo de conhecimento. **Não** é a proveniência de dado integrado, que a constituição define no
+  princípio III com sete campos e que pertence às features de coleta: os dois conjuntos são
+  declarados separadamente de propósito.
 - **Grafo de conhecimento declarado**: Relação de dependência entre ontologias e de
   referência entre identificadores, derivada dos arquivos. Acíclico e conforme às direções
   permitidas.
@@ -600,9 +689,10 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 
 - **SC-001**: 100% dos arquivos da base são verificados contra um esquema de validação.
   Nenhum arquivo dentro da base fica sem verificação, e o relatório informa a contagem.
-- **SC-002**: Para cada uma das formas de invalidez listadas em Edge Cases existe um caso que
-  a exercita e é recusado. A cobertura é declarada caso por caso, e o que não for coberto é
-  declarado como não coberto.
+- **SC-002**: Para cada uma das formas de invalidez listadas em Edge Cases existe um caso que a
+  exercita e é recusado. A cobertura é declarada **caso por caso, em tabela rastreável** na matriz
+  de evidência, ligando cada linha de Edge Cases ao caso que a exercita; o que não for coberto é
+  declarado como não coberto. Um total agregado não satisfaz este critério.
 - **SC-003**: Nenhuma das cinco declarações obrigatórias — esquema, versão, identificador
   estável, dependências, proveniência — pode ser omitida sem que a validação reprove. Cinco
   casos, cinco recusas.
@@ -623,14 +713,16 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **SC-009**: A incorporação é bloqueada quando qualquer uma das três verificações de
   conhecimento está reprovada, ausente ou pendente, provado por tentativa real de
   incorporação — não por leitura de configuração.
-- **SC-010**: O número de leituras de disco não cresce com o número de consultas à base em
-  execução, medido com um número de consultas grande o bastante para que a diferença seja
-  inequívoca.
+- **SC-010**: O número de leituras de disco **não aumenta** entre a décima e a milésima consulta à
+  base em execução. Duas medições, dois números, e o segundo igual ao primeiro. "Grande o bastante
+  para que a diferença seja inequívoca" não é mensurável e foi substituído.
 - **SC-011**: A comparação entre versões classifica corretamente mudança compatível e
   incompatível, e não relata mudança alguma quando a diferença é apenas de formatação.
 - **SC-012**: A execução completa dos portões de qualidade, agora com oito verificações,
   continua dentro de dez minutos em ambiente sem cache — o mesmo orçamento estabelecido na
-  feature 001, agora com três verificações a mais.
+  feature 001, agora com três verificações a mais. O **número de arquivos** que a base suporta
+  dentro desse orçamento é medição do plano e está declarado aberto: a especificação fixa o
+  orçamento, não o volume. Declarar um volume aqui, sem medir, seria número inventado.
 - **SC-013**: A mensagem de recusa permite que uma pessoa localize e corrija o problema
   **sem** abrir o código da validação: nomeia arquivo, posição e o que se esperava.
   Verificado por leitura das mensagens produzidas, não por inspeção do código que as gera.
@@ -654,6 +746,15 @@ sabe o que está decidido é uma armadilha — é assim que buraco silencioso so
 - **SC-020**: Toda exceção à detecção de segredo declarada na base tem justificativa e aponta
   para campo existente. O total de exceções é relatado em cada execução, e é conhecido — não
   estimado.
+- **SC-021**: A validação reprova quando qualquer um dos nove esquemas não carrega, provado
+  impedindo o carregamento de um esquema por vez — nove casos, nove reprovações. Contagem de
+  arquivos maior que zero **não** basta para aprovar. É a verificação que a feature 001 não tinha.
+- **SC-022**: As cinco tarefas têm contrato de código de saída verificado nos dois caminhos, e
+  cada uma relata quanto trabalho fez. Dez medições, não duas.
+- **SC-023**: Duas execuções de cada tarefa sobre a mesma base produzem saída idêntica, byte a
+  byte. Sem isso a matriz de evidência registra ruído como mudança.
+- **SC-024**: Nenhuma variável de ambiente, argumento ou campo de configuração desliga, afrouxa ou
+  reduz o alcance de qualquer verificação, verificado por busca exaustiva no que a feature entrega.
 
 ## Assumptions
 
@@ -686,6 +787,13 @@ está dito.
 - **Orçamento de tempo**: as três novas verificações somam-se às cinco existentes dentro do
   mesmo orçamento de dez minutos. Se a medição mostrar que não cabem, a alternativa a
   considerar é a ordem de execução, nunca reduzir o que é verificado.
+- **Limitação aceita: duplicação semântica não é mecanizável.** A constituição manda reutilizar
+  conceito que já existe em ontologia mais geral, em vez de duplicá-lo. A verificação detecta
+  identificador duplicado (FR-019) e permite declarar o conceito mais geral que se especializa
+  (FR-076), e **isso não fecha o caso**: dois conceitos com identificadores diferentes e a mesma
+  definição passam pelas duas verificações. Fechar exigiria comparar significado, não texto.
+  Permanece sob revisão semântica humana, e a limitação fica registrada aqui em vez de ser tratada
+  como coberta — o achado veio do checklist `semantics.md`, item CHK024.
 - **Uma linha de trabalho**: esta feature entra por uma única linha de trabalho, com uma
   proposta de mudança por história, como a feature 001, e não mistura features independentes.
 
