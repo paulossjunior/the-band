@@ -1018,3 +1018,13 @@ sem perceber.
 - Qualquer alteração no isolamento por Tenant, na verificação de saúde ou no trabalho
   assíncrono entregues pela feature 001.
 - Interface de usuário para a base de conhecimento.
+- **Contrato OpenAPI.** O projeto passou a exigir especificação OpenAPI para **todo** serviço HTTP
+  exposto, sem exceção — ver [CLAUDE.md](../../CLAUDE.md). A regra **não produz requisito nesta
+  feature**, e o motivo é substantivo: a 002 entrega cinco tarefas de linha de comando e arquivos
+  declarativos, e **não expõe endpoint algum**. Escrever aqui "todo serviço tem contrato OpenAPI"
+  criaria requisito sem sujeito — a mesma classe de defeito que esta feature existe para combater, e
+  que os checklists `semantics.md` e `validation.md` já apontaram duas vezes nela mesma.
+
+  A regra passa a valer para a feature 025, que expõe o motor de consulta declarativa, e para a
+  dívida dos dois endpoints de saúde entregues pela feature 001 sem contrato. Nenhuma das duas é
+  retrofitada aqui: a constituição proíbe misturar features independentes.

@@ -59,6 +59,7 @@ perguntar "por que não fizeram X?" acha a resposta aqui, em vez de repetir o ex
 | [ADR-0001](docs/adr/0001-monolito-modular-multitenant.md) | Sistema único modular em vez de vários serviços |
 | [ADR-0002](docs/adr/0002-estrategia-de-isolamento-por-tenant.md) | Como o isolamento entre clientes é imposto, e por que Row Level Security foi descartada |
 | [ADR-0003](docs/adr/0003-tenant-nao-e-organizacao.md) | Por que Tenant e Organização são entidades diferentes |
+| [ADR-0004](docs/adr/0004-contrato-openapi-e-sua-exposicao.md) | Por que todo serviço tem contrato OpenAPI, e por que o documento é dividido por credencial |
 
 `specs/` guarda a especificação, o plano, a pesquisa e os contratos de cada feature.
 
