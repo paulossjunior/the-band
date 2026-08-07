@@ -1,0 +1,35 @@
+# Mapeamento de exemplo. NENHUM conector existe até a feature 024 — este arquivo exercita a forma.
+mapping:
+  id: example.mapping.demo_item
+  schema_version: 1
+  version: 1.0.0
+  status: proposed
+  dependencies:
+    - example
+  source:
+    provider: demo
+    entity: item
+    api: rest
+    schema_version: v1
+  target:
+    ontology: example
+    concept: example.artifact
+  equivalence: partial
+  justification:
+    pt-BR: >
+      Um item da fonte de demonstração corresponde parcialmente a um artefato. Não é equivalência
+      total: o item carrega estado de fluxo que o artefato não modela.
+    en: >
+      An item from the demo source partially corresponds to an artifact. Not a total equivalence:
+      the item carries workflow state the artifact does not model.
+  identity:
+    external_id_path: id
+    natural_key:
+      - source.id
+      - id
+  limitations:
+    - pt-BR: O item não é equivalente ao artefato; carrega estado de fluxo.
+      en: The item is not equivalent to the artifact; it carries workflow state.
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

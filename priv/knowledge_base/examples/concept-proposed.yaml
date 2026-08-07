@@ -1,0 +1,23 @@
+# Conceito PROPOSTO — validado com o mesmo rigor, e ausente da base compilada (FR-067).
+concept:
+  id: example.draft_thing
+  schema_version: 1
+  version: 0.1.0
+  status: proposed
+  ontology: example
+  dependencies: []
+  label:
+    pt-BR: Coisa em rascunho
+    en: Draft thing
+  definition:
+    pt-BR: Conceito ainda em discussão. Existe para exercitar o estado proposto.
+    en: Concept still under discussion. Exists to exercise the proposed state.
+  classification:
+    ufo_category: social_object
+  attributes:
+    - name: note
+      type: string
+      required: false
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

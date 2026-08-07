@@ -1,0 +1,29 @@
+# Conceito OBSOLETO — permanece na base e declara o que o substitui (FR-068). É o passo de aviso
+# antes da remoção: retirar direto quebraria quem depende sem avisar.
+concept:
+  id: example.old_artifact
+  schema_version: 1
+  version: 1.1.0
+  status: deprecated
+  deprecated_in: 1.1.0
+  superseded_by: example.artifact
+  reason:
+    pt-BR: Fundia objeto e evento. Separado em example.artifact e example.activity.
+    en: Conflated object and event. Split into example.artifact and example.activity.
+  ontology: example
+  dependencies: []
+  label:
+    pt-BR: Artefato antigo
+    en: Old artifact
+  definition:
+    pt-BR: Conceito descontinuado, mantido para exercitar o caminho de descontinuação.
+    en: Discontinued concept, kept to exercise the deprecation path.
+  classification:
+    ufo_category: social_object
+  attributes:
+    - name: title
+      type: string
+      required: true
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

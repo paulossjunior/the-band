@@ -36,7 +36,9 @@ knowledge_base:
   # CDRO — NÃO estão aqui porque nenhuma existe ainda. Listá-las tornaria impossível detectar
   # "manifesto declara ontologia que não existe", para sempre. O roteiro delas vive na constituição e
   # no guia operacional, que é onde intenção pertence.
-  ontologies: []
+  ontologies:
+    - example   # conjunto reservado: dá SUJEITO à maquinaria de validação (FR-041). Não é ontologia
+                # de domínio, e é excluído do conhecimento disponível em execução (FR-044).
 
   # Incondicional (FR-004). Este campo é declarativo, não é interruptor: valor diferente faz o próprio
   # manifesto ser recusado. Não existe variável de ambiente, argumento nem campo que afrouxe a

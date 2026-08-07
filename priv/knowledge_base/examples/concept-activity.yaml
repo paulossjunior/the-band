@@ -1,0 +1,22 @@
+concept:
+  id: example.activity
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  ontology: example
+  dependencies: []
+  label:
+    pt-BR: Atividade de exemplo
+    en: Example activity
+  definition:
+    pt-BR: Ação executada ao longo do tempo, que produz artefatos.
+    en: Action performed over time that produces artifacts.
+  classification:
+    ufo_category: event
+  attributes:
+    - name: started_at
+      type: datetime
+      required: true
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

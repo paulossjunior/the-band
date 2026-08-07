@@ -1,0 +1,20 @@
+relation:
+  id: example.produced_by
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  ontology: example
+  dependencies: []
+  label:
+    pt-BR: produzido por
+    en: produced by
+  source: example.artifact
+  target: example.activity
+  cardinality: many_to_one
+  temporal: enduring
+  semantics:
+    pt-BR: Liga o artefato à atividade que o produziu.
+    en: Links the artifact to the activity that produced it.
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

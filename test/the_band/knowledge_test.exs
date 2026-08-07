@@ -49,12 +49,18 @@ defmodule TheBand.KnowledgeTest do
       assert "en" in m.required_languages
     end
 
-    test "o manifesto NÃO declara ontologia alguma, e isso é deliberado" do
-      # Clarifications Q1: a lista é INVENTÁRIO do que existe, não roteiro. Nenhuma ontologia foi
-      # modelada ainda; listar as doze tornaria impossível detectar "manifesto declara ontologia que
-      # não existe", para sempre.
+    test "o manifesto declara APENAS o espaço de exemplos" do
+      # Clarifications Q1: a lista é INVENTÁRIO do que existe, não roteiro. `example` está lá porque
+      # o conjunto reservado existe; as doze ontologias da rede NÃO estão, porque nenhuma foi
+      # modelada. Listá-las tornaria impossível detectar "manifesto declara ontologia que não
+      # existe", para sempre.
       assert {:ok, m} = Manifest.load(@base_real)
-      assert m.ontologies == []
+      assert m.ontologies == ["example"]
+
+      for real <- ~w(ufo eo spo sysswo rsro cmpo roost qapo osdef sro ciro cdro) do
+        refute real in m.ontologies,
+               "o manifesto declara `#{real}`, e nenhuma ontologia da rede foi modelada ainda"
+      end
     end
   end
 

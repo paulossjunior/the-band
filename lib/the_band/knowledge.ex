@@ -18,7 +18,7 @@ defmodule TheBand.Knowledge do
   Dizer mais do que isso seria a mentira que esta feature inteira existe para evitar.
   """
 
-  alias TheBand.Knowledge.{Loader, Manifest, TokenGate}
+  alias TheBand.Knowledge.{Loader, Manifest, Schema, TokenGate, Validator}
 
   @padrao "priv/knowledge_base"
 
@@ -57,16 +57,28 @@ defmodule TheBand.Knowledge do
         {:error, v} -> {nil, v}
       end
 
+    {esquemas_carregados, violacoes_de_esquema} = Schema.load_all(base)
+
+    # A validação estrita só roda com manifesto e esquemas em pé. Sem eles não há contra o que
+    # validar, e reportar "nenhuma violação de campo" seria afirmar cobertura que não houve.
+    violacoes_de_campo =
+      if not is_nil(manifesto) and esquemas_carregados != %{} and portao.violacoes == [],
+        do: validar_conteudo(base, esquemas_carregados, manifesto),
+        else: []
+
+    todas =
+      portao.violacoes ++ violacoes_do_manifesto ++ violacoes_de_esquema ++ violacoes_de_campo
+
     relatorio = %{
       base: base,
       manifest: manifesto,
       schemas: esquemas(base),
       arquivos_inspecionados: portao.inspecionados,
       ignorados: portao.ignorados,
-      violacoes: ordenar(portao.violacoes ++ violacoes_do_manifesto)
+      violacoes: ordenar(todas)
     }
 
-    if estado_do_portao == :ok and violacoes_do_manifesto == [] do
+    if estado_do_portao == :ok and todas == [] do
       {:ok, relatorio}
     else
       {:error, relatorio}
@@ -104,6 +116,26 @@ defmodule TheBand.Knowledge do
     base = base || base_dir()
     presentes = esquemas(base) |> Enum.map(& &1.id)
     tipos_exigidos() -- presentes
+  end
+
+  # Os arquivos de esquema NÃO passam pela validação de campo: eles descrevem os tipos, e validá-los
+  # contra si mesmos seria recursivo. A integridade deles é garantida por `Schema.load_all/1`, que
+  # reprova quando um não carrega — e um esquema que não carrega faz os arquivos daquele tipo serem
+  # pulados em silêncio (FR-089).
+  defp validar_conteudo(base, esquemas, manifesto) do
+    base
+    |> Path.join("**/*.{yaml,yml}")
+    |> Path.wildcard()
+    |> Enum.reject(&(String.contains?(&1, "/schemas/") or Path.basename(&1) == "manifest.yaml"))
+    |> Enum.sort()
+    |> Enum.flat_map(fn caminho ->
+      rel = Path.relative_to(caminho, base)
+
+      case Loader.load_file(caminho, base_dir: base, label: rel) do
+        {:ok, doc} -> Validator.validate(doc, rel, esquemas, manifesto)
+        {:error, v} -> v
+      end
+    end)
   end
 
   defp esquemas(base) do

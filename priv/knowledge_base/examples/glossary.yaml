@@ -1,0 +1,16 @@
+glossary:
+  id: example.term.artifact
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  dependencies: []
+  term:
+    pt-BR: Artefato
+    en: Artifact
+  definition:
+    pt-BR: Objeto produzido por uma atividade.
+    en: Object produced by an activity.
+  ontology: example
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

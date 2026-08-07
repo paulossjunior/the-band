@@ -24,6 +24,7 @@ defmodule TheBand.Knowledge.TokenGate.Violation do
           | :too_slow
           | :syntax
           | :symlink_outside_base
+          | :schema
 
   @type t :: %__MODULE__{
           kind: kind(),

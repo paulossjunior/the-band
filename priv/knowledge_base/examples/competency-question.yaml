@@ -1,0 +1,19 @@
+competency_question:
+  id: example.cq1
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  ontology: example
+  dependencies: []
+  question:
+    pt-BR: Quais artefatos foram produzidos por uma atividade?
+    en: Which artifacts were produced by an activity?
+  concepts:
+    - example.artifact
+    - example.activity
+  relations:
+    - example.produced_by
+  expected_answer_type: list
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

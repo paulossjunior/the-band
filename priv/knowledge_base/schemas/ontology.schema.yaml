@@ -16,6 +16,11 @@ schema:
   optional:
     - modules       # nomes de AGRUPAMENTO INTERNO, nunca referência a identificador (FR-084)
   references: []    # nenhum campo desta forma é referência a identificador (FR-082)
+  # Campos cujo texto é declarado POR IDIOMA. O esquema decide, não o código: `name` é traduzível
+  # numa necessidade de informação e é nome canônico numa ontologia.
+  translatable:
+    - label
+
   # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
   # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
   common:

@@ -1,0 +1,38 @@
+# Conceito ATIVO — o caminho de aceitação completo.
+concept:
+  id: example.artifact
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  ontology: example
+  dependencies: []
+  label:
+    pt-BR: Artefato de exemplo
+    en: Example artifact
+  definition:
+    pt-BR: Objeto produzido por uma atividade. Existe para exercitar o esquema de conceito.
+    en: Object produced by an activity. Exists to exercise the concept schema.
+  classification:
+    ufo_category: social_object
+  attributes:
+    - name: title
+      type: string
+      required: true
+    - name: created_at
+      type: datetime
+      required: true
+    - name: weight
+      type: decimal
+      required: false
+  relations:
+    - relation: example.produced_by
+      target: example.activity
+      cardinality: many_to_one
+  constraints:
+    - id: example.artifact.title_is_required
+      statement:
+        pt-BR: Todo artefato tem título.
+        en: Every artifact has a title.
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

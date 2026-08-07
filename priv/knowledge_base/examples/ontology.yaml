@@ -1,0 +1,23 @@
+# Ontologia do conjunto reservado de exemplos.
+#
+# O espaço `example.*` existe para que a maquinaria de validação tenha SUJEITO. Sem ele, "existe um
+# esquema para cada tipo" seria satisfazível por nove esquemas que nada valida — a mesma classe de
+# defeito que esta feature combate (FR-041).
+#
+# NÃO é ontologia de domínio. Nenhum conceito daqui descreve o mundo real, e o conjunto é excluído
+# do conhecimento disponível em execução (FR-044).
+ontology:
+  id: example
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  name: Example
+  label:
+    pt-BR: Exemplo
+    en: Example
+  namespace: the_band.knowledge.example
+  network: none
+  dependencies: []
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

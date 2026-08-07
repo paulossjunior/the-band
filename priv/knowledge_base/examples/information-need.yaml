@@ -1,0 +1,26 @@
+information_need:
+  id: example.need.artifact_volume
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  dependencies:
+    - example
+  name:
+    pt-BR: Volume de artefatos produzidos
+    en: Volume of artifacts produced
+  question:
+    pt-BR: Quantos artefatos foram produzidos em um período?
+    en: How many artifacts were produced in a period?
+  stakeholders:
+    - engineering_manager
+  decision_supported:
+    pt-BR: Dimensionar a capacidade da equipe.
+    en: Size the team capacity.
+  required_concepts:
+    - example.artifact
+    - example.activity
+  required_relations:
+    - example.produced_by
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002
