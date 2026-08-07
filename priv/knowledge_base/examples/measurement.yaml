@@ -1,0 +1,29 @@
+# Medida de exemplo. O vínculo com a necessidade de informação é OBRIGATÓRIO — princípio IV da
+# constituição, e FR-077. Medida sem ele reprova.
+measurement:
+  id: example.measure.artifact_count
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  dependencies:
+    - example
+  name:
+    pt-BR: Contagem de artefatos
+    en: Artifact count
+  answers_information_need:
+    - example.need.artifact_volume
+  value_type: integer
+  unit: artifacts
+  formula:
+    expression: count(example.artifact)
+    inputs:
+      - example.artifact
+  scope:
+    levels:
+      - activity
+  limitations:
+    - pt-BR: Conta artefatos registrados, não artefatos existentes no mundo.
+      en: Counts recorded artifacts, not artifacts existing in the world.
+  provenance:
+    source_type: example
+    reference: conjunto reservado da feature 002

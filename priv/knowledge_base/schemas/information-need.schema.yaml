@@ -20,6 +20,13 @@ schema:
   references:
     - required_concepts[]
     - required_relations[]
+  # Campos cujo texto é declarado POR IDIOMA. O esquema decide, não o código: `name` é traduzível
+  # numa necessidade de informação e é nome canônico numa ontologia.
+  translatable:
+    - name
+    - question
+    - decision_supported
+
   # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
   # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
   common:

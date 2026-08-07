@@ -109,8 +109,10 @@ defmodule Mix.Tasks.Knowledge.Validate do
     end
 
     sh.info(
-      "\n  Esta verificação cobre integridade de documento e o manifesto. Validação de campo por " <>
-        "esquema, vocabulários fechados e reciprocidade ainda NÃO são verificados — issue #22."
+      "\n  Cobre: integridade de documento, manifesto, campo por esquema, gramática de " <>
+        "identificador, idiomas exigidos, estado de maturidade e vocabulários fechados.\n" <>
+        "  NÃO cobre: campo desconhecido em nível aninhado arbitrário, referência a identificador " <>
+        "inexistente e ciclo entre ontologias (issue #24), e perguntas de competência (issue #26)."
     )
   end
 end

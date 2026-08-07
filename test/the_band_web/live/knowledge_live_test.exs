@@ -52,10 +52,14 @@ defmodule TheBandWeb.KnowledgeLiveTest do
       assert m =~ "en"
     end
 
-    test "diz que nenhuma ontologia está declarada, e por quê", %{conn: conn} do
-      # Q1: a lista é inventário, não roteiro. A tela precisa explicar o vazio, senão parece defeito.
+    test "mostra apenas o espaço de exemplos entre as ontologias", %{conn: conn} do
+      # Q1: a lista é inventário, não roteiro. `example` está lá porque o conjunto reservado existe;
+      # as doze da rede não, porque nenhuma foi modelada.
       {:ok, view, _} = live(conn, @rota)
-      assert element(view, "#manifesto") |> render() =~ "as doze chegam da feature 003"
+      m = element(view, "#manifesto") |> render()
+
+      assert m =~ "example"
+      refute m =~ "cmpo", "nenhuma ontologia da rede foi modelada ainda"
     end
 
     test "lista os nove esquemas", %{conn: conn} do
