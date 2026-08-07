@@ -1,0 +1,35 @@
+# Esquema de validação: definição de conector
+#
+# Como uma fonte externa é alcançada. Nenhum conector existe até a feature 024; este esquema define a forma que eles terão. NENHUM valor de credencial aparece aqui — só o NOME da variável de ambiente que a carrega.
+schema:
+  id: connector-definition
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: connector-definition
+  describes: definição de conector
+  required:
+    - provider
+    - api                    # rest, graphql
+    - base_url
+    - authentication         # o ESQUEMA e o NOME da variável, jamais o valor
+    - rate_limit
+  optional:
+    - pagination
+    - retry
+  references: []
+  # Proibição explícita: qualquer valor de credencial aqui é recusado pela varredura de segredo, e
+  # neste repositório público isso é incidente, não achado a corrigir depois.
+  forbidden_values:
+    - credencial
+    - token
+    - senha
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version
+    - version
+    - id
+    - dependencies
+    - provenance
+    - status

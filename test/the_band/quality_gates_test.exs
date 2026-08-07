@@ -35,12 +35,16 @@ defmodule TheBand.QualityGatesTest do
   # A ordem que a constituição exige, na seção Quality Gates. A ordem não é cosmética: `mix credo`
   # não compila o projeto antes de rodar, e sem a compilação as checagens próprias sob
   # `credo_checks/` não carregam — o Credo imprime "Ignoring an undefined check" e sai com código 0.
+  # A partir da feature 002, `knowledge.validate` entra ao final. A constituição lista as três
+  # verificações de conhecimento entre os portões obrigatórios; as outras duas — `knowledge.graph` e
+  # `knowledge.test` — entram nas issues #24 e #26, e esta lista cresce junto.
   @ordem_constitucional [
     "format --check-formatted",
     "compile --warnings-as-errors",
     "credo --strict",
     "dialyzer",
-    "test"
+    "test",
+    "knowledge.validate"
   ]
 
   describe "o alias gates" do

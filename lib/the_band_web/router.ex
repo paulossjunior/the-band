@@ -59,6 +59,7 @@ defmodule TheBandWeb.Router do
       pipe_through :browser
 
       live "/eventos/:tenant_slug", OperationalEventsLive, :index
+      live "/conhecimento", KnowledgeLive, :index
     end
   end
 end

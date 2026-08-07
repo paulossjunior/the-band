@@ -1,0 +1,32 @@
+# Esquema de validação: relação
+#
+# Como dois conceitos se ligam. Exige natureza temporal porque a constituição distingue evento de objeto e processo planejado de executado (FR-081), e cardinalidade porque a diferença entre muitos-para-um e muitos-para-muitos é a diferença entre uma coluna e uma tabela de junção (FR-095).
+schema:
+  id: relation
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: relation
+  describes: relação
+  required:
+    - ontology
+    - label
+    - source        # conceito de origem
+    - target        # conceito de destino
+    - cardinality   # notação ÚNICA em toda a base (FR-079)
+    - temporal      # natureza temporal da relação
+  optional:
+    - semantics
+    - constraints
+  references:
+    - source
+    - target
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version   # a versão do esquema que este arquivo segue; igual ao padrão do manifesto
+    - version          # a versão do CONTEÚDO — muda quando a afirmação muda
+    - id               # identificador estável; minúsculas, dígitos, sublinhado, ponto como separador
+    - dependencies     # lista declarada; lista VAZIA é diferente de campo omitido
+    - provenance       # de onde vem o que este arquivo afirma
+    - status           # proposed | active | deprecated — só active chega ao runtime
