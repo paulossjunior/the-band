@@ -1,0 +1,52 @@
+# Manifesto da base de conhecimento do The Band.
+#
+# A base é artefato de DOMÍNIO — versionada, validada e revisada como código. Não é configuração:
+# nenhum valor aqui muda comportamento operacional, e todos descrevem o que a base afirma.
+#
+# Este arquivo é validado com o mesmo RIGOR que qualquer outro da base, e NÃO contra a mesma lista de
+# campos (FR-088). Ele não declara identificador estável, dependências, proveniência própria nem
+# estado de maturidade: um manifesto "proposto" ou "obsoleto" é contradição.
+
+knowledge_base:
+  name: the-band
+  version: 1.0.0
+
+  # Idioma padrão da base. Identificadores são estáveis e independentes de idioma — não se traduzem.
+  default_language: pt-BR
+
+  # Os DOIS são obrigatórios em todo rótulo e definição (FR-058). As ontologias de referência são
+  # publicadas em inglês, e sem o texto em inglês nenhuma definição é conferível contra a fonte que a
+  # originou.
+  #
+  # Retirar um idioma daqui é MUDANÇA INCOMPATÍVEL (FR-060). Sem essa regra este campo seria um
+  # interruptor: bastaria remover o inglês para uma proposta de mudança incompleta passar.
+  required_languages:
+    - pt-BR
+    - en
+
+  # Uma versão viva por esquema (FR-055). Arquivo que declare outra é recusado. Elevar um esquema
+  # migra todos os arquivos daquele tipo no mesmo conjunto de mudanças.
+  default_schema_version: 1
+
+  # INVENTÁRIO do que a base contém, não roteiro de intenção (Clarifications Q1). A correspondência é
+  # verificada nos DOIS sentidos: ontologia declarada sem conteúdo reprova, e conteúdo sobre ontologia
+  # não declarada reprova.
+  #
+  # As doze ontologias da rede — UFO, EO, SPO, SysSwO, RSRO, CMPO, ROoST, QAPO, OSDEF, SRO, CIRO,
+  # CDRO — NÃO estão aqui porque nenhuma existe ainda. Listá-las tornaria impossível detectar
+  # "manifesto declara ontologia que não existe", para sempre. O roteiro delas vive na constituição e
+  # no guia operacional, que é onde intenção pertence.
+  ontologies: []
+
+  # Incondicional (FR-004). Este campo é declarativo, não é interruptor: valor diferente faz o próprio
+  # manifesto ser recusado. Não existe variável de ambiente, argumento nem campo que afrouxe a
+  # validação (FR-090).
+  validation:
+    strict: true
+    reject_unknown_fields: true
+
+  # Proveniência DO CONHECIMENTO — de onde vem o que o arquivo afirma. Distinta da proveniência de
+  # DADO INTEGRADO, que a constituição define no princípio III com sete campos e que pertence às
+  # features de coleta (FR-073).
+  provenance:
+    required: true

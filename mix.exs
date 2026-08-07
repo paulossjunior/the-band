@@ -164,7 +164,14 @@ defmodule TheBand.MixProject do
         "compile --warnings-as-errors",
         "credo --strict",
         "dialyzer",
-        "test"
+        "test",
+        # A partir da feature 002. A constituição lista as três verificações de conhecimento entre os
+        # portões obrigatórios; `knowledge.validate` é a primeira a existir. `knowledge.graph` e
+        # `knowledge.test` entram nas issues #24 e #26.
+        #
+        # Depois de `test` de propósito: ela lê o disco e não depende de compilação de teste, mas
+        # falhar aqui deve significar "a base está quebrada", não "os testes não rodaram".
+        "knowledge.validate"
       ],
       precommit: ["deps.unlock --unused", "format", "gates"]
     ]

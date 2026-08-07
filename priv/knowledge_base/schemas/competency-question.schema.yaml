@@ -1,0 +1,29 @@
+# Esquema de validação: pergunta de competência
+#
+# O que a ontologia deve ser capaz de responder. Nesta feature a verificação é ESTRUTURAL: confere que os conceitos e relações citados existem e pertencem a ontologias declaradas. Nenhuma pergunta é respondida com dados, porque não há dados (FR-035).
+schema:
+  id: competency-question
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: competency-question
+  describes: pergunta de competência
+  required:
+    - ontology
+    - question              # nos idiomas exigidos
+    - concepts              # conceitos necessários para responder
+    - expected_answer_type  # vocabulário FECHADO (FR-085)
+  optional:
+    - relations
+  references:
+    - concepts[]
+    - relations[]
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version
+    - version
+    - id
+    - dependencies
+    - provenance
+    - status

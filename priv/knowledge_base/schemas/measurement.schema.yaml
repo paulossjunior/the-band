@@ -1,0 +1,29 @@
+# Esquema de validação: medida
+#
+# Como um número é calculado. Exige o vínculo com a necessidade de informação que ela responde, e medida sem esse vínculo REPROVA — é o princípio IV da constituição, que sem este requisito ficaria ao critério de quem escreve (FR-077).
+schema:
+  id: measurement
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: measurement
+  describes: medida
+  required:
+    - name
+    - answers_information_need  # SEM ISTO A MEDIDA REPROVA — princípio IV
+    - value_type
+    - unit
+    - formula                   # expressão e as entradas que ela consome
+    - scope                     # em que níveis a medida faz sentido
+    - limitations               # interpretações incorretas possíveis
+  references:
+    - answers_information_need[]
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version
+    - version
+    - id
+    - dependencies
+    - provenance
+    - status

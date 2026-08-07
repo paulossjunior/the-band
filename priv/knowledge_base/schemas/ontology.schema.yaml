@@ -1,0 +1,27 @@
+# Esquema de validação: ontologia
+#
+# Metadados de uma ontologia da rede. Declara de quais outras ela depende, e a direção é verificada contra as regras da constituição — ciclo e direção proibida reprovam o build.
+schema:
+  id: ontology
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: ontology
+  describes: ontologia
+  required:
+    - name          # nome legível
+    - label         # rótulo nos idiomas exigidos
+    - namespace     # espaço de nomes no código
+    - network       # a que rede pertence: seon, continuum, ou raiz
+  optional:
+    - modules       # nomes de AGRUPAMENTO INTERNO, nunca referência a identificador (FR-084)
+  references: []    # nenhum campo desta forma é referência a identificador (FR-082)
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version   # a versão do esquema que este arquivo segue; igual ao padrão do manifesto
+    - version          # a versão do CONTEÚDO — muda quando a afirmação muda
+    - id               # identificador estável; minúsculas, dígitos, sublinhado, ponto como separador
+    - dependencies     # lista declarada; lista VAZIA é diferente de campo omitido
+    - provenance       # de onde vem o que este arquivo afirma
+    - status           # proposed | active | deprecated — só active chega ao runtime

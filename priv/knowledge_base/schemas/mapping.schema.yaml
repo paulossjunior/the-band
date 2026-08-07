@@ -1,0 +1,31 @@
+# Esquema de validação: mapeamento externo
+#
+# Liga entidade de fonte externa a conceito da ontologia. Exige chave natural porque sem ela não há idempotência de escrita, que o princípio VII obriga (FR-078). E exige justificativa semântica porque o princípio II proíbe tratar conceitos como equivalentes só por semelhança de nome.
+schema:
+  id: mapping
+  schema_version: 1
+  version: 1.0.0
+  status: active
+  root_key: mapping
+  describes: mapeamento externo
+  required:
+    - source        # provider, entity, api, schema_version da fonte
+    - target        # ontology e concept de destino
+    - equivalence   # grau: total ou parcial. Parcial exige justificativa
+    - justification # por que este mapeamento é defensável, nos idiomas exigidos
+    - identity      # external_id_path e natural_key — a chave natural sustenta a idempotência
+    - limitations   # o que este mapeamento NÃO afirma
+  optional:
+    - attributes
+    - relations
+  references:
+    - target.concept
+  # As cinco declarações comuns a TODO arquivo de conhecimento (FR-007). A ausência de qualquer uma
+  # reprova, e campo presente com valor vazio é VIOLAÇÃO, não ausência.
+  common:
+    - schema_version
+    - version
+    - id
+    - dependencies
+    - provenance
+    - status
