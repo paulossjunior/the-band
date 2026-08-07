@@ -43,9 +43,11 @@ imposto por análise estática.
 | Req | dependência presente, **nenhum conector** — feature 025 |
 | Isolamento por Tenant | **existe** — escopo que levanta; RLS descartada, ver ADR-0002 |
 | Verificação automática | `ci.yml` + `security.yml`, 3 status checks obrigatórios |
-| Registros de decisão | ADR-0001 a **0006** em `docs/adr/` |
+| Registros de decisão | ADR-0001 a **0007** em `docs/adr/` |
 | Contrato OpenAPI dos serviços | **ausente** — regra vale desde já, dívida paga pela feature 039 |
-| `priv/knowledge_base/` | **ausente** — feature 002 |
+| `priv/knowledge_base/` | **ausente** — feature 002, PR B |
+| Portão de tokens YAML | **existe** — recusa âncora, chave duplicada e tabulação antes de construir termo |
+| Tela de eventos operacionais | **existe** — `/dev/eventos/:slug`, **somente em desenvolvimento** |
 | Módulos ontológicos | **ausentes** — features 003+ |
 
 Tabelas existentes: `tenants`, `operational_events`, e as do Oban. Nenhuma com prefixo de
@@ -373,11 +375,39 @@ Quando aplicável: `mix ecto.migrate`, `mix test --only integration`.
 Nunca remover ou enfraquecer teste para o pipeline passar. Nunca esconder erro com mock
 excessivo ou valor fixo.
 
+## Modelo de desenvolvimento: vertical slice
+
+**Instrução permanente.** Toda feature entrega **tela e backend na mesma proposta de mudança**. Nunca
+infraestrutura sem consumidor visível.
+
+Regras que decorrem:
+
+- **nenhuma infraestrutura sem fatia visível.** Se a feature é maquinaria, ela entra junto com a tela
+  ou a API que a consome, ou na mesma leva;
+- **a fatia atravessa todas as camadas**: banco → escopo de Tenant → domínio → API ou LiveView →
+  tela. Fatia que para no meio não prova o caminho;
+- **cerimônia proporcional.** Um checklist, não três. Requisitos apenas do que a feature entrega. O
+  ciclo Spec Kit continua obrigatório pelo princípio I — muda o tamanho, não a existência;
+- **LiveView conta como tela e backend** na mesma entrega, e não dispara a regra de contrato OpenAPI,
+  que vale para superfície consumida por outro programa;
+- ao propor uma feature, **diga o que a pessoa vai ver ao final**. "Nada ainda" significa fatia mal
+  cortada.
+
+**Por que a regra existe, com o custo que ela evita.** O roadmap punha a primeira tela na feature
+035, de 39: duas features de infraestrutura pura antes dela, com zero saída visível.
+
+**E a regra pagou na primeira aplicação.** A feature 040 encontrou um defeito que estava no backend
+desde a 001 — `count_events/1` não aceitava filtro enquanto `list_events/2` aceitava, e a tela
+exibiria "41 eventos" mostrando 10. Invisível sem consumidor.
+
+Esta instrução prevalece sobre a ordem do roadmap. Ela **não** dispensa o ciclo Spec Kit.
+
 ## Roadmap
 
 ```text
 001 Fundação Phoenix e governança      ✔ ENTREGUE (94/95, T088 pendente)
-002 Infraestrutura da base YAML        ← EM CURSO
+040 Fatia vertical: eventos na tela    ✔ ENTREGUE — primeira tela
+002 Infraestrutura da base YAML        ← EM CURSO (portão de tokens entregue)
 003 Infraestrutura comum de ontologias
 
 # vertical fina de valor: prova o pipeline ponta a ponta antes de ampliar ontologias
@@ -397,9 +427,37 @@ excessivo ou valor fixo.
 
 033 Analytics · 034 Reportify · 035 Dashboard
 036 Avaliação do Knowledge Graph · 037 Recuperação semântica · 038 GraphRAG
+
+# 040 recebe número novo, como a 039: renumerar quebraria referência já escrita.
+# Ela nasceu de uma crítica correta — o roadmap punha a primeira tela na 035, de
+# 39 — e passou a ser o modelo de todas as features seguintes.
 ```
 
 Cada item tem ciclo próprio de Spec Kit.
+
+### Ordem de execução: levas, com o que cada uma mostra
+
+**A lista acima é de temas. A ordem é esta.** Cada leva termina com algo que se pode abrir e olhar —
+é o que o modelo de vertical slice exige.
+
+| Leva | Entrega | O que a pessoa vê |
+|---|---|---|
+| **1** ✔ | 001 fundação · **040 fatia de eventos** | plataforma sobe; tela de eventos operacionais com filtro e correlação |
+| **2** ← agora | 002 base YAML **+ tela da base** | quais ontologias, conceitos e relações a base declara, e o que a validação reprovou |
+| **3** | 003 infra de ontologias · 005 EO | organizações, pessoas e equipes na tela, vindas do YAML |
+| **4** | 009 CMPO · 024 fontes · 026 e 027 conectores GitHub | repositórios e Pull Requests reais na tela |
+| **5** | **039 contrato OpenAPI** · 025 motor de consulta | primeira API com contrato publicado, consumível por outro programa |
+| **6** | 031 necessidades · 032 medidas | **"tempo até a primeira revisão"** de ponta a ponta |
+| **7** | 004 UFO · 006 a 012 · 013 a 023 · 028 a 030 | ampliação sob demanda, cada ontologia com consumidor identificado |
+| **8** | 033 a 038 | analytics, Reportify, painel, avaliação do grafo, GraphRAG |
+
+**A leva 2 é a correção mais importante desta reordenação.** A feature 002 entrega maquinaria de
+validação sem nada que se possa olhar. Ela passa a entrar junto com uma tela que mostra a base
+carregada e o que a validação recusou — o consumidor que a torna verificável por quem opera, e não só
+por teste.
+
+**A leva 7 obedece ao princípio IV**: nenhuma ontologia é implementada sem consumidor identificado.
+Ampliar por ampliar é o que a constituição já proíbe.
 
 ## Restrições
 
