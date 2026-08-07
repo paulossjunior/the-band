@@ -1,0 +1,19 @@
+# Workflow de diagnóstico, temporário.
+#
+# Existe para responder uma pergunta binária: o GitHub Actions cria execuções neste repositório?
+# Os workflows CI e Security disparam em `pull_request` e em push na main; este dispara em push
+# de QUALQUER ramo, e não faz nada além de imprimir uma linha.
+#
+# Se este workflow rodar, o Actions funciona e o problema é específico dos outros dois ou dos
+# Pull Requests abertos. Se não rodar, a criação de execuções está bloqueada no repositório.
+#
+# APAGAR depois do diagnóstico.
+name: Diagnostico
+
+on: push
+
+jobs:
+  vivo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Actions criou e executou esta execução."
